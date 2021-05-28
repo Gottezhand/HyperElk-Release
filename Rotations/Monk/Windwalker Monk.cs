@@ -330,7 +330,7 @@ namespace HyperElk.Core
             if (API.PlayerHasBuff(Serenity) && IsMelee && !API.PlayerIsCasting(false) && !CurrentCastFistsOfFury)
             {
                 //actions.serenity=fists_of_fury,if=buff.serenity.remains<1
-                if (API.CanCast(FistsofFury) && API.PlayerBuffTimeRemaining(Serenity) < 100)
+                if (API.CanCast(FistsofFury) && API.PlayerBuffTimeRemaining(Serenity) < 300)
                 {
                     API.CastSpell(FistsofFury);
                     return;
