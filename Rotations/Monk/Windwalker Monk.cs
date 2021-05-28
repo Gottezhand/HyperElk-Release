@@ -50,7 +50,7 @@ namespace HyperElk.Core
         bool LastCastChiWave => API.LastSpellCastInGame == ChiWave;
         bool CurrenCastFistsOfFury => API.PlayerCurrentCastSpellID == 113656;
         private string UseTouchofDeath => TouchofDeathList[CombatRoutine.GetPropertyInt(TouchofDeath)];
-        string[] TouchofDeathList = new string[] { "with Cooldowns", "Manual" };
+        string[] TouchofDeathList = new string[] { "with Cooldowns", "Manual", "Always" };
         //Trinket1
         private string UseTrinket1 => TrinketList1[CombatRoutine.GetPropertyInt(trinket1)];
         string[] TrinketList1 = new string[] { "always", "Cooldowns", "AOE", "never" };
@@ -305,6 +305,11 @@ namespace HyperElk.Core
                 FocusHelper++;
                 return;
             }
+            if (API.CanCast(TouchofDeath) && UseTouchofDeath == "Always" && API.TargetHealthPercent <= 15)
+            {
+                API.CastSpell(TouchofDeath);
+                return;
+            }
             //# Executed every time the actor is available.
             //actions=auto_attack
             //actions+=/spear_hand_strike,if=target.debuff.casting.react
@@ -409,7 +414,7 @@ namespace HyperElk.Core
                         return;
                     }
                     //actions.cd_sef+=/weapons_of_order,if=(raid_event.adds.in>45|raid_event.adds.up)&cooldown.rising_sun_kick.remains<execute_time
-                    if (API.CanCast(WeaponsofOrder) && UseWeaponsofOrder == "with Cooldowns" && API.SpellCDDuration(RisingSunKick) < API.TargetTimeToExec)
+                    if (API.CanCast(WeaponsofOrder) && UseWeaponsofOrder == "with Cooldowns")
                     {
                         API.CastSpell(WeaponsofOrder);
                         return;
