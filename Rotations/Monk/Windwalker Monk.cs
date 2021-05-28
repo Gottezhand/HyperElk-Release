@@ -48,7 +48,7 @@ namespace HyperElk.Core
         bool LastCastSpinningCraneKick => API.LastSpellCastInGame == SpinningCraneKick;
         bool LastCastRisingSunKick => API.LastSpellCastInGame == RisingSunKick;
         bool LastCastChiWave => API.LastSpellCastInGame == ChiWave;
-        bool CurrenCastFistsOfFury => API.PlayerCurrentCastSpellID == 113656;
+        bool CurrentCastFistsOfFury => API.PlayerCurrentCastSpellID == 113656;
         private string UseTouchofDeath => TouchofDeathList[CombatRoutine.GetPropertyInt(TouchofDeath)];
         string[] TouchofDeathList = new string[] { "with Cooldowns", "Manual", "Always" };
         //Trinket1
@@ -325,7 +325,7 @@ namespace HyperElk.Core
             }
             //actions+=/potion,if=(buff.serenity.up|buff.storm_earth_and_fire.up)&pet.xuen_the_white_tiger.active|fight_remains<=60
             //actions+=/call_action_list,name=serenity,if=buff.serenity.up
-            if (API.PlayerHasBuff(Serenity) && IsMelee && !API.PlayerIsCasting(false))
+            if (API.PlayerHasBuff(Serenity) && IsMelee && !API.PlayerIsCasting(false) && !CurrentCastFistsOfFury)
             {
                 //actions.serenity=fists_of_fury,if=buff.serenity.remains<1
                 if (API.CanCast(FistsofFury) && API.PlayerBuffTimeRemaining(Serenity) < 100)
@@ -395,7 +395,7 @@ namespace HyperElk.Core
                 }
             }
             //actions+=/call_action_list,name=weapons_of_order,if=buff.weapons_of_order.up
-            if (API.PlayerHasBuff(WeaponsofOrder) && IsMelee && !API.PlayerIsCasting(false))
+            if (API.PlayerHasBuff(WeaponsofOrder) && IsMelee && !API.PlayerIsCasting(false) && !CurrentCastFistsOfFury)
             {
 
                 //actions.weapons_of_order+=/call_action_list,name=cd_sef,if=!talent.serenity
@@ -498,7 +498,7 @@ namespace HyperElk.Core
                     }
                 }
                 //actions.weapons_of_order+=/call_action_list,name=cd_serenity,if=talent.serenity
-                if (IsCooldowns && TalentSerenty)
+                if (IsCooldowns && TalentSerenty && !CurrentCastFistsOfFury)
                 {
                     //actions.cd_serenity=variable,name=serenity_burst,op=set,value=cooldown.serenity.remains<1|pet.xuen_the_white_tiger.active&cooldown.serenity.remains>30|fight_remains<20
                     //actions.cd_serenity+=/invoke_xuen_the_white_tiger,if=!variable.hold_xuen|fight_remains<25
@@ -739,7 +739,7 @@ namespace HyperElk.Core
                 return;
             }
             //actions+=/call_action_list,name=cd_sef,if=!talent.serenity
-            if (IsCooldowns && !TalentSerenty)
+            if (IsCooldowns && !TalentSerenty && !CurrentCastFistsOfFury)
             {
                 //actions.cd_sef=invoke_xuen_the_white_tiger,if=!variable.hold_xuen|fight_remains<25
                 if (API.CanCast(InvokeXuen) && UseInvokeXuen == "with Cooldowns" && (!HoldXuen || API.TargetTimeToDie < 25000))
@@ -839,7 +839,7 @@ namespace HyperElk.Core
                 }
             }
             //actions+=/call_action_list,name=cd_serenity,if=talent.serenity
-            if (IsCooldowns && TalentSerenty)
+            if (IsCooldowns && TalentSerenty && !CurrentCastFistsOfFury)
             {
                 //actions.cd_serenity=variable,name=serenity_burst,op=set,value=cooldown.serenity.remains<1|pet.xuen_the_white_tiger.active&cooldown.serenity.remains>30|fight_remains<20
                 //actions.cd_serenity+=/invoke_xuen_the_white_tiger,if=!variable.hold_xuen|fight_remains<25
@@ -929,7 +929,7 @@ namespace HyperElk.Core
                 }
             }
             //actions+=/call_action_list,name=st,if=active_enemies<3
-            if ((IsAOE && API.PlayerUnitInMeleeRangeCount <= AOEUnitNumber || !IsAOE) && NotCasting && IsMelee)
+            if ((IsAOE && API.PlayerUnitInMeleeRangeCount <= AOEUnitNumber || !IsAOE) && NotCasting && IsMelee && !CurrentCastFistsOfFury)
             {
                 //actions.st=whirling_dragon_punch,if=raid_event.adds.in>cooldown.whirling_dragon_punch.duration*0.8|raid_event.adds.up
                 if (API.CanCast(WhirlingDragonPunch) && TalentWhirlingDragonPunch)
@@ -1043,7 +1043,7 @@ namespace HyperElk.Core
                 //
             }
             //actions+=/call_action_list,name=aoe,if=active_enemies>=3
-            if (IsAOE && API.PlayerUnitInMeleeRangeCount >= AOEUnitNumber && NotCasting && IsMelee)
+            if (IsAOE && API.PlayerUnitInMeleeRangeCount >= AOEUnitNumber && NotCasting && IsMelee && !CurrentCastFistsOfFury)
             {
                 //actions.aoe=whirling_dragon_punch
                 if (API.CanCast(WhirlingDragonPunch) && TalentWhirlingDragonPunch)
