@@ -50,7 +50,7 @@ namespace HyperElk.Core
         bool LastCastChiWave => API.LastSpellCastInGame == ChiWave;
         bool CurrentCastFistsOfFury => API.PlayerCurrentCastSpellID == 113656;
         private string UseTouchofDeath => TouchofDeathList[CombatRoutine.GetPropertyInt(TouchofDeath)];
-        string[] TouchofDeathList = new string[] { "with Cooldowns", "Manual", "Always" };
+        string[] TouchofDeathList = new string[] { "with Cooldowns", "Manual", "Always", "Pride Mob" };
         //Trinket1
         private string UseTrinket1 => TrinketList1[CombatRoutine.GetPropertyInt(trinket1)];
         string[] TrinketList1 = new string[] { "always", "Cooldowns", "AOE", "never" };
@@ -130,6 +130,9 @@ namespace HyperElk.Core
 
         private string LegSweep = "Leg Sweep";
         private bool MotC => (bool)CombatRoutine.GetProperty("MotC");
+        private float PlayerCurrentHealth => (API.PlayerMaxHealth * API.PlayerHealthPercent) / 100;
+        private float TargetCurrentHealth => (API.TargetMaxHealth * API.TargetHealthPercent) / 100;
+
         //actions.weapons_of_order=variable,name=blackout_kick_needed,op=set,value=buff.weapons_of_order_ww.remains&(cooldown.rising_sun_kick.remains>buff.weapons_of_order_ww.remains&buff.weapons_of_order_ww.remains<2|cooldown.rising_sun_kick.remains-buff.weapons_of_order_ww.remains>2&buff.weapons_of_order_ww.remains<4)
         private bool NeedBlackoutKick => API.PlayerHasBuff(WeaponsofOrder) && (API.SpellCDDuration(RisingSunKick) < API.PlayerBuffTimeRemaining(WeaponsofOrder) && API.PlayerBuffTimeRemaining(WeaponsofOrder) < 200 || API.SpellCDDuration(RisingSunKick) - API.SpellCDDuration(WeaponsofOrder) > 200 && API.PlayerBuffTimeRemaining(WeaponsofOrder) < 400);
         //actions+=/variable,name=hold_xuen,op=set,value=cooldown.invoke_xuen_the_white_tiger.remains>fight_remains|fight_remains<120&fight_remains>cooldown.serenity.remains&cooldown.serenity.remains>10
@@ -235,7 +238,6 @@ namespace HyperElk.Core
 
         public override void Pulse()
         {
-
         }
 
         public override void CombatPulse()
@@ -305,7 +307,7 @@ namespace HyperElk.Core
                 FocusHelper++;
                 return;
             }
-            if (API.CanCast(TouchofDeath) && UseTouchofDeath == "Always" && API.TargetHealthPercent <= 15)
+            if (API.CanCast(TouchofDeath) && (UseTouchofDeath == "Always" && API.TargetHealthPercent <= 15 || UseTouchofDeath == "Pride Mob" && API.TargetGUIDNPCID == 173729 && TargetCurrentHealth < PlayerCurrentHealth))
             {
                 API.CastSpell(TouchofDeath);
                 return;
