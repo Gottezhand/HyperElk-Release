@@ -18,6 +18,7 @@
 // v2.5 new simc apl and new settings options
 // v2.6 explosive protection
 // v2.7 hotfix
+// v2.8 trinkets ignore
 
 using System.Diagnostics;
 namespace HyperElk.Core
@@ -135,7 +136,7 @@ namespace HyperElk.Core
         public override void Initialize()
         {
             CombatRoutine.Name = "Enhancement Shaman by smartie";
-            API.WriteLog("Welcome to smartie`s Enhancement Shaman v2.7");
+            API.WriteLog("Welcome to smartie`s Enhancement Shaman v2.8");
             API.WriteLog("For this rota you need to following macros");
             API.WriteLog("For Earthshield on Focus: /cast [@focus,help] Earth shield");
 
@@ -418,12 +419,12 @@ namespace HyperElk.Core
                 API.CastSpell(RacialSpell1);
                 return;
             }
-            if (API.PlayerTrinketIsUsable(1) && API.PlayerTrinketRemainingCD(1) == 0 && !isExplosive && IsTrinkets1)
+            if (API.PlayerTrinketIsUsable(1) && API.PlayerTrinketRemainingCD(1) == 0 && !API.MacroIsIgnored("Trinket1") && !isExplosive && IsTrinkets1)
             {
                 API.CastSpell("Trinket1");
                 return;
             }
-            if (API.PlayerTrinketIsUsable(2) && API.PlayerTrinketRemainingCD(2) == 0 && !isExplosive && IsTrinkets2)
+            if (API.PlayerTrinketIsUsable(2) && API.PlayerTrinketRemainingCD(2) == 0 && !API.MacroIsIgnored("Trinket2") && !isExplosive && IsTrinkets2)
             {
                 API.CastSpell("Trinket2");
                 return;
