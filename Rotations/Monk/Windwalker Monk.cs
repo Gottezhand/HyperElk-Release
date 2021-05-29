@@ -85,7 +85,7 @@ namespace HyperElk.Core
         public bool isMouseoverInCombat => CombatRoutine.GetPropertyBool("MouseoverInCombat");
         float FoFCastTime => 400 / (1f + API.PlayerGetHaste / 1);
         float CJLCastTime => 400 / (1f + API.PlayerGetHaste / 1);
-
+        private float SEF_FullRechargeTime => (2 - API.SpellCharges(StormEarthandFire)) * 9000 + API.SpellCDDuration(StormEarthandFire);
 
         //Spells,Buffs,Debuffs
         private string TigerPalm = "Tiger Palm";
@@ -450,14 +450,14 @@ namespace HyperElk.Core
                         return;
                     }
                     //actions.cd_sef+=/storm_earth_and_fire,if=cooldown.storm_earth_and_fire.charges=2|fight_remains<20|(raid_event.adds.remains>15|!covenant.kyrian&((raid_event.adds.in>cooldown.storm_earth_and_fire.full_recharge_time|!raid_event.adds.exists)&(cooldown.invoke_xuen_the_white_tiger.remains>cooldown.storm_earth_and_fire.full_recharge_time|variable.hold_xuen))&cooldown.fists_of_fury.remains<=9&chi>=2&cooldown.whirling_dragon_punch.remains<=12)
-                    if (API.CanCast(StormEarthandFire) && (API.SpellCharges(StormEarthandFire) == 2 || API.TargetTimeToDie < 2000 || PlayerCovenantSettings != "Kyrian" && (API.SpellCDDuration(InvokeXuen) > API.SpellCDDuration(StormEarthandFire) && API.SpellCharges(StormEarthandFire) == 1 || HoldXuen) && API.SpellCDDuration(FistsofFury) <= 900 && API.PlayerCurrentChi >= 2 && API.SpellCDDuration(WhirlingDragonPunch) <= 1200))
+                    if (API.CanCast(StormEarthandFire) && (API.SpellCharges(StormEarthandFire) == 2 || API.TargetTimeToDie < 2000 || PlayerCovenantSettings != "Kyrian" && (API.SpellCDDuration(InvokeXuen) > SEF_FullRechargeTime || HoldXuen) && API.SpellCDDuration(FistsofFury) <= 900 && API.PlayerCurrentChi >= 2 && API.SpellCDDuration(WhirlingDragonPunch) <= 1200))
                     {
                         API.CastSpell(StormEarthandFire);
                         FocusHelper = 0;
                         return;
                     }
                     //actions.cd_sef+=/storm_earth_and_fire,if=covenant.kyrian&(buff.weapons_of_order.up|(fight_remains<cooldown.weapons_of_order.remains|cooldown.weapons_of_order.remains>cooldown.storm_earth_and_fire.full_recharge_time)&cooldown.fists_of_fury.remains<=9&chi>=2&cooldown.whirling_dragon_punch.remains<=12)
-                    if (API.CanCast(StormEarthandFire) && PlayerCovenantSettings == "Kyrian" && (API.PlayerHasBuff(StormEarthandFire) || API.TargetTimeToDie < API.SpellCDDuration(WeaponsofOrder) || API.SpellCDDuration(WeaponsofOrder) > API.SpellCDDuration(StormEarthandFire) && API.SpellCharges(StormEarthandFire) == 1) && API.SpellCDDuration(FistsofFury) <= 900 && API.PlayerCurrentChi >= 2 && API.SpellCDDuration(WhirlingDragonPunch) <= 1200 && TalentWhirlingDragonPunch)
+                    if (API.CanCast(StormEarthandFire) && PlayerCovenantSettings == "Kyrian" && (API.PlayerHasBuff(StormEarthandFire) || API.TargetTimeToDie < API.SpellCDDuration(WeaponsofOrder) || API.SpellCDDuration(WeaponsofOrder) > SEF_FullRechargeTime) && API.SpellCDDuration(FistsofFury) <= 900 && API.PlayerCurrentChi >= 2 && API.SpellCDDuration(WhirlingDragonPunch) <= 1200 && TalentWhirlingDragonPunch)
                     {
                         API.CastSpell(StormEarthandFire);
                         FocusHelper = 0;
@@ -790,7 +790,7 @@ namespace HyperElk.Core
                     return;
                 }
                 //actions.cd_sef+=/storm_earth_and_fire,if=cooldown.storm_earth_and_fire.charges=2|fight_remains<20|(raid_event.adds.remains>15|!covenant.kyrian&((raid_event.adds.in>cooldown.storm_earth_and_fire.full_recharge_time|!raid_event.adds.exists)&(cooldown.invoke_xuen_the_white_tiger.remains>cooldown.storm_earth_and_fire.full_recharge_time|variable.hold_xuen))&cooldown.fists_of_fury.remains<=9&chi>=2&cooldown.whirling_dragon_punch.remains<=12)
-                if (API.CanCast(StormEarthandFire) && (API.SpellCharges(StormEarthandFire) == 2 || API.TargetTimeToDie < 2000 || PlayerCovenantSettings != "Kyrian" && (API.SpellCDDuration(InvokeXuen) > API.SpellCDDuration(StormEarthandFire) && API.SpellCharges(StormEarthandFire) == 1 || HoldXuen) && API.SpellCDDuration(FistsofFury) <= 900 && API.PlayerCurrentChi >= 2 && API.SpellCDDuration(WhirlingDragonPunch) <= 1200))
+                if (API.CanCast(StormEarthandFire) && (API.SpellCharges(StormEarthandFire) == 2 || API.TargetTimeToDie < 2000 || PlayerCovenantSettings != "Kyrian" && (API.SpellCDDuration(InvokeXuen) > SEF_FullRechargeTime || HoldXuen) && API.SpellCDDuration(FistsofFury) <= 900 && API.PlayerCurrentChi >= 2 && API.SpellCDDuration(WhirlingDragonPunch) <= 1200))
                 {
                     API.CastSpell(StormEarthandFire);
                     FocusHelper = 0;
@@ -798,7 +798,7 @@ namespace HyperElk.Core
                     return;
                 }
                 //actions.cd_sef+=/storm_earth_and_fire,if=covenant.kyrian&(buff.weapons_of_order.up|(fight_remains<cooldown.weapons_of_order.remains|cooldown.weapons_of_order.remains>cooldown.storm_earth_and_fire.full_recharge_time)&cooldown.fists_of_fury.remains<=9&chi>=2&cooldown.whirling_dragon_punch.remains<=12)
-                if (API.CanCast(StormEarthandFire) && PlayerCovenantSettings == "Kyrian" && (API.PlayerHasBuff(StormEarthandFire) || API.TargetTimeToDie < API.SpellCDDuration(WeaponsofOrder) || API.SpellCDDuration(WeaponsofOrder) > API.SpellCDDuration(StormEarthandFire) && API.SpellCharges(StormEarthandFire) == 1) && API.SpellCDDuration(FistsofFury) <= 900 && API.PlayerCurrentChi >= 2 && API.SpellCDDuration(WhirlingDragonPunch) <= 1200 && TalentWhirlingDragonPunch)
+                if (API.CanCast(StormEarthandFire) && PlayerCovenantSettings == "Kyrian" && (API.PlayerHasBuff(StormEarthandFire) || API.TargetTimeToDie < API.SpellCDDuration(WeaponsofOrder) || API.SpellCDDuration(WeaponsofOrder) > SEF_FullRechargeTime) && API.SpellCDDuration(FistsofFury) <= 900 && API.PlayerCurrentChi >= 2 && API.SpellCDDuration(WhirlingDragonPunch) <= 1200 && TalentWhirlingDragonPunch)
                 {
                     API.CastSpell(StormEarthandFire);
                     FocusHelper = 0;
