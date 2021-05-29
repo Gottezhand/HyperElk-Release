@@ -26,6 +26,7 @@
 // v3.2 low level fix
 // v3.3 low level fix
 // v3.4 Healing surge our of combat added
+// v3.5 small hotfix for lava burst
 
 using System.Diagnostics;
 
@@ -80,6 +81,8 @@ namespace HyperElk.Core
         private string EyeOfTheStorm = "Eye of the Storm (Pet)";
         private string Meteor = "Meteor (Pet)";
         private string CallLightning = "Call Lightning";
+        private string CleanseSpirit = "Cleanse Spirit";
+        private string Soulshape = "Soulshape";
 
         //Talents
         bool TalentEchoingShock => API.PlayerIsTalentSelected(2, 2);
@@ -167,6 +170,7 @@ namespace HyperElk.Core
             API.WriteLog("For Earthquake (optional but recommended): /cast [@cursor] Earthquake");
             API.WriteLog("For Earthshield on Focus: /cast [@focus,help] Earth shield");
             API.WriteLog("For Mouseover Flame Shock: /cast [@mouseover] Flame Shock");
+            API.WriteLog("For Cleanse Spirit: /cast [@player] Cleanse Spirit");
 
             //Spells
             CombatRoutine.AddSpell(ChainLightning, 188443, "D7");
@@ -200,6 +204,7 @@ namespace HyperElk.Core
             CombatRoutine.AddSpell(FlametongueWeapon, 318038);
             CombatRoutine.AddSpell(EyeOfTheStorm, 157375);
             CombatRoutine.AddSpell(Meteor, 117588);
+            CombatRoutine.AddSpell(CleanseSpirit, 51886);
 
 
             //Macros
@@ -226,10 +231,13 @@ namespace HyperElk.Core
             CombatRoutine.AddBuff(EchoingShock, 320125);
             CombatRoutine.AddBuff(VesperTotem, 324386);
             CombatRoutine.AddBuff(CallLightning, 157348);
+            CombatRoutine.AddBuff(Soulshape, 310143);
 
             //Debuff
             CombatRoutine.AddDebuff(FlameShock, 188389);
             CombatRoutine.AddDebuff(Quake, 240447);
+            CombatRoutine.AddDebuff("Sintouched Anima", 328494);
+            CombatRoutine.AddDebuff("Curse of Stone", 319603);
 
             //Toggle
             CombatRoutine.AddToggle("Mouseover");
@@ -334,7 +342,7 @@ namespace HyperElk.Core
             }
             if (API.PlayerCurrentCastTimeRemaining > 40 || API.PlayerSpellonCursor)
                 return;
-            if (!API.PlayerIsMounted)
+            if (!API.PlayerIsMounted && !API.PlayerHasBuff(Soulshape))
             {
                 if (isInterrupt && API.CanCast(WindShear) && PlayerLevel >= 12 && IsInKickRange)
                 {
@@ -381,6 +389,16 @@ namespace HyperElk.Core
                     API.CastSpell(LightningShield);
                     return;
                 }
+                if (API.CanCast(CleanseSpirit))
+                {
+                    {
+                        if (API.PlayerHasDebuff("Sintouched Anima") || API.PlayerHasDebuff("Sintouched Anima"))
+                        {
+                            API.CastSpell(CleanseSpirit);
+                            return;
+                        }
+                    }
+                }
                 //Focus
                 if (API.CanCast(EarthShield) && IsFocus && API.FocusRange < 40 && API.FocusHealthPercent != 0 && !API.FocusHasBuff(EarthShield) && API.PlayerMana >= 10 && TalentEarthShield)
                 {
@@ -395,36 +413,39 @@ namespace HyperElk.Core
         {
             if (API.PlayerCurrentCastTimeRemaining > 40 || API.PlayerSpellonCursor)
                 return;
-            if (AutoWolf && API.CanCast(GhostWolf) && !PlayerHasBuff(GhostWolf) && !API.PlayerIsMounted && API.PlayerIsMoving)
+            if (!API.PlayerIsMounted && !API.PlayerHasBuff(Soulshape))
             {
-                API.CastSpell(GhostWolf);
-                return;
-            }
-            if (API.CanCast(EarthShield) && API.PlayerMana >= 10 && SelfEarthShield && !IsFocus && !PlayerHasBuff(LightningShield) && !PlayerHasBuff(EarthShield) && TalentEarthShield)
-            {
-                API.CastSpell(EarthShield);
-                return;
-            }
-            if (API.CanCast(LightningShield) && PlayerLevel >= 9 && API.PlayerMana >= 2 && SelfLightningShield && !PlayerHasBuff(EarthShield) && !PlayerHasBuff(LightningShield) && API.PlayerHealthPercent > 0)
-            {
-                API.CastSpell(LightningShield);
-                return;
-            }
-            //Focus
-            if (API.CanCast(EarthShield) && IsFocus && API.FocusRange < 40 && API.FocusHealthPercent != 0 && !API.FocusHasBuff(EarthShield) && API.PlayerMana >= 10 && TalentEarthShield)
-            {
-                API.CastSpell(EarthShield + "Focus");
-                return;
-            }
-            if (API.CanCast(FlametongueWeapon) && WeaponEnchant && API.LastSpellCastInGame != (FlametongueWeapon) && API.PlayerWeaponBuffDuration(true) < 30000)
-            {
-                API.CastSpell(FlametongueWeapon);
-                return;
-            }
-            if (API.CanCast(HealingSurge) && SaveQuake && PlayerLevel >= 4 && API.PlayerMana >= 24 && !API.PlayerIsMoving && API.PlayerHealthPercent <= HealingSurgeLifePercentOOC)
-            {
-                API.CastSpell(HealingSurge);
-                return;
+                if (AutoWolf && API.CanCast(GhostWolf) && !PlayerHasBuff(GhostWolf) && !API.PlayerIsMounted && API.PlayerIsMoving)
+                {
+                    API.CastSpell(GhostWolf);
+                    return;
+                }
+                if (API.CanCast(EarthShield) && API.PlayerMana >= 10 && SelfEarthShield && !IsFocus && !PlayerHasBuff(LightningShield) && !PlayerHasBuff(EarthShield) && TalentEarthShield)
+                {
+                    API.CastSpell(EarthShield);
+                    return;
+                }
+                if (API.CanCast(LightningShield) && PlayerLevel >= 9 && API.PlayerMana >= 2 && SelfLightningShield && !PlayerHasBuff(EarthShield) && !PlayerHasBuff(LightningShield) && API.PlayerHealthPercent > 0)
+                {
+                    API.CastSpell(LightningShield);
+                    return;
+                }
+                //Focus
+                if (API.CanCast(EarthShield) && IsFocus && API.FocusRange < 40 && API.FocusHealthPercent != 0 && !API.FocusHasBuff(EarthShield) && API.PlayerMana >= 10 && TalentEarthShield)
+                {
+                    API.CastSpell(EarthShield + "Focus");
+                    return;
+                }
+                if (API.CanCast(FlametongueWeapon) && WeaponEnchant && API.LastSpellCastInGame != (FlametongueWeapon) && API.PlayerWeaponBuffDuration(true) < 30000)
+                {
+                    API.CastSpell(FlametongueWeapon);
+                    return;
+                }
+                if (API.CanCast(HealingSurge) && SaveQuake && PlayerLevel >= 4 && API.PlayerMana >= 24 && !API.PlayerIsMoving && API.PlayerHealthPercent <= HealingSurgeLifePercentOOC)
+                {
+                    API.CastSpell(HealingSurge);
+                    return;
+                }
             }
         }
         private void rotation()
@@ -569,7 +590,7 @@ namespace HyperElk.Core
                                 return;
                             }
                             //actions.se_single_target +=/ lava_burst,if= buff.wind_gust.stack < 18 | buff.lava_surge.up
-                            if (API.CanCast(LavaBurst) && PlayerLevel >= 11 && !LastCastlavaBurst && (SaveQuake || PlayerHasBuff(LavaSurge)) && API.PlayerMaelstrom < 90 && (API.PlayerBuffStacks(WindGust) < 18 || PlayerHasBuff(LavaSurge)))
+                            if (API.CanCast(LavaBurst) && PlayerLevel >= 11 && (!API.PlayerIsMoving || PlayerHasBuff(SpiritwalkersGrace) || PlayerHasBuff(LavaSurge)) && !LastCastlavaBurst && (SaveQuake || PlayerHasBuff(LavaSurge)) && API.PlayerMaelstrom < 90 && (API.PlayerBuffStacks(WindGust) < 18 || PlayerHasBuff(LavaSurge)))
                             {
                                 API.CastSpell(LavaBurst);
                                 return;
@@ -599,13 +620,13 @@ namespace HyperElk.Core
                                 return;
                             }
                             //actions.se_single_target +=/ lava_burst,if= buff.ascendance.up
-                            if (API.CanCast(LavaBurst) && PlayerLevel >= 11 && !LastCastlavaBurst && (!API.PlayerIsMoving || PlayerHasBuff(SpiritwalkersGrace)) && (SaveQuake || PlayerHasBuff(LavaSurge)) && API.PlayerMaelstrom < 90 && PlayerHasBuff(Ascendance))
+                            if (API.CanCast(LavaBurst) && PlayerLevel >= 11 && !LastCastlavaBurst && (!API.PlayerIsMoving || PlayerHasBuff(SpiritwalkersGrace) || PlayerHasBuff(LavaSurge)) && (SaveQuake || PlayerHasBuff(LavaSurge)) && API.PlayerMaelstrom < 90 && PlayerHasBuff(Ascendance))
                             {
                                 API.CastSpell(LavaBurst);
                                 return;
                             }
                             //actions.se_single_target +=/ lava_burst,if= cooldown_react & !talent.master_of_the_elements.enabled
-                            if (API.CanCast(LavaBurst) && PlayerLevel >= 11 && !LastCastlavaBurst && (!API.PlayerIsMoving || PlayerHasBuff(SpiritwalkersGrace)) && (SaveQuake || PlayerHasBuff(LavaSurge)) && API.PlayerMaelstrom < 90)
+                            if (API.CanCast(LavaBurst) && PlayerLevel >= 11 && !LastCastlavaBurst && (!API.PlayerIsMoving || PlayerHasBuff(SpiritwalkersGrace) || PlayerHasBuff(LavaSurge)) && (SaveQuake || PlayerHasBuff(LavaSurge)) && API.PlayerMaelstrom < 90)
                             {
                                 API.CastSpell(LavaBurst);
                                 return;
@@ -686,7 +707,7 @@ namespace HyperElk.Core
                                 return;
                             }
                             //actions.single_target +=/ lava_burst,if= talent.echoing_shock.enabled & buff.echoing_shock.up
-                            if (API.CanCast(LavaBurst) && (SaveQuake || PlayerHasBuff(LavaSurge)) && (!API.PlayerIsMoving || PlayerHasBuff(SpiritwalkersGrace)) && PlayerLevel >= 11 && !LastCastlavaBurst && !PlayerHasBuff(MasteroftheElements) && PlayerHasBuff(EchoingShock) && API.PlayerMaelstrom < 90)
+                            if (API.CanCast(LavaBurst) && (SaveQuake || PlayerHasBuff(LavaSurge)) && (!API.PlayerIsMoving || PlayerHasBuff(SpiritwalkersGrace) || PlayerHasBuff(LavaSurge)) && PlayerLevel >= 11 && !LastCastlavaBurst && !PlayerHasBuff(MasteroftheElements) && PlayerHasBuff(EchoingShock) && API.PlayerMaelstrom < 90)
                             {
                                 API.CastSpell(LavaBurst);
                                 return;
@@ -861,7 +882,7 @@ namespace HyperElk.Core
                             return;
                         }
                         //actions.aoe +=/ lava_burst,target_if = dot.flame_shock.remains,if= spell_targets.chain_lightning < 4 | buff.lava_surge.up | (talent.master_of_the_elements.enabled & !buff.master_of_the_elements.up & maelstrom >= 60)
-                        if (API.CanCast(LavaBurst) && PlayerLevel >= 11 && !stormwatch.IsRunning && (SaveQuake || PlayerHasBuff(LavaSurge)) && !LastCastlavaBurst && (API.PlayerBuffTimeRemaining(Stormkeeper) > 300 * gcd * API.PlayerBuffStacks(Stormkeeper) || !PlayerHasBuff(Stormkeeper)) && !PlayerHasBuff(MasteroftheElements) && API.PlayerMaelstrom < 90 && API.TargetDebuffRemainingTime(FlameShock) > gcd * 2 && (API.TargetUnitInRangeCount < 4 && !IsForceAOE || PlayerHasBuff(LavaSurge) || (TalentMasterofTheElements && !PlayerHasBuff(MasteroftheElements) && API.PlayerMaelstrom >= 60)))
+                        if (API.CanCast(LavaBurst) && PlayerLevel >= 11 && !stormwatch.IsRunning && (!API.PlayerIsMoving || PlayerHasBuff(SpiritwalkersGrace) || PlayerHasBuff(LavaSurge)) && (SaveQuake || PlayerHasBuff(LavaSurge)) && !LastCastlavaBurst && (API.PlayerBuffTimeRemaining(Stormkeeper) > 300 * gcd * API.PlayerBuffStacks(Stormkeeper) || !PlayerHasBuff(Stormkeeper)) && !PlayerHasBuff(MasteroftheElements) && API.PlayerMaelstrom < 90 && API.TargetDebuffRemainingTime(FlameShock) > gcd * 2 && (API.TargetUnitInRangeCount < 4 && !IsForceAOE || PlayerHasBuff(LavaSurge) || (TalentMasterofTheElements && !PlayerHasBuff(MasteroftheElements) && API.PlayerMaelstrom >= 60)))
                         {
                             API.CastSpell(LavaBurst);
                             return;
