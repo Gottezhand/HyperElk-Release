@@ -48,9 +48,9 @@ namespace HyperElk.Core
         bool LastCastSpinningCraneKick => API.LastSpellCastInGame == SpinningCraneKick;
         bool LastCastRisingSunKick => API.LastSpellCastInGame == RisingSunKick;
         bool LastCastChiWave => API.LastSpellCastInGame == ChiWave;
-        bool CurrenCastFistsOfFury => API.PlayerCurrentCastSpellID == 113656;
+        bool CurrentCastFistsOfFury => API.PlayerCurrentCastSpellID == 113656;
         private string UseTouchofDeath => TouchofDeathList[CombatRoutine.GetPropertyInt(TouchofDeath)];
-        string[] TouchofDeathList = new string[] { "with Cooldowns", "Manual", "Always" };
+        string[] TouchofDeathList = new string[] { "with Cooldowns", "Manual", "Always", "Pride Mob" };
         //Trinket1
         private string UseTrinket1 => TrinketList1[CombatRoutine.GetPropertyInt(trinket1)];
         string[] TrinketList1 = new string[] { "always", "Cooldowns", "AOE", "never" };
@@ -83,6 +83,8 @@ namespace HyperElk.Core
         private bool TochOfKarmaSmartDungeon => API.TargetCurrentCastSpellID == 322236 && API.TargetCurrentCastTimeRemaining <= 200 || API.TargetCurrentCastSpellID == 321247 || API.TargetCurrentCastSpellID == 321828 || API.TargetCurrentCastSpellID == 328125 || API.TargetCurrentCastSpellID == 334625;
         private bool IsMouseover => API.ToggleIsEnabled("Mouseover");
         public bool isMouseoverInCombat => CombatRoutine.GetPropertyBool("MouseoverInCombat");
+        float FoFCastTime => 400 / (1f + API.PlayerGetHaste / 1);
+        float CJLCastTime => 400 / (1f + API.PlayerGetHaste / 1);
 
 
         //Spells,Buffs,Debuffs
@@ -130,6 +132,9 @@ namespace HyperElk.Core
 
         private string LegSweep = "Leg Sweep";
         private bool MotC => (bool)CombatRoutine.GetProperty("MotC");
+        private float PlayerCurrentHealth => (API.PlayerMaxHealth * API.PlayerHealthPercent) / 100;
+        private float TargetCurrentHealth => (API.TargetMaxHealth * API.TargetHealthPercent) / 100;
+
         //actions.weapons_of_order=variable,name=blackout_kick_needed,op=set,value=buff.weapons_of_order_ww.remains&(cooldown.rising_sun_kick.remains>buff.weapons_of_order_ww.remains&buff.weapons_of_order_ww.remains<2|cooldown.rising_sun_kick.remains-buff.weapons_of_order_ww.remains>2&buff.weapons_of_order_ww.remains<4)
         private bool NeedBlackoutKick => API.PlayerHasBuff(WeaponsofOrder) && (API.SpellCDDuration(RisingSunKick) < API.PlayerBuffTimeRemaining(WeaponsofOrder) && API.PlayerBuffTimeRemaining(WeaponsofOrder) < 200 || API.SpellCDDuration(RisingSunKick) - API.SpellCDDuration(WeaponsofOrder) > 200 && API.PlayerBuffTimeRemaining(WeaponsofOrder) < 400);
         //actions+=/variable,name=hold_xuen,op=set,value=cooldown.invoke_xuen_the_white_tiger.remains>fight_remains|fight_remains<120&fight_remains>cooldown.serenity.remains&cooldown.serenity.remains>10
@@ -305,7 +310,7 @@ namespace HyperElk.Core
                 FocusHelper++;
                 return;
             }
-            if (API.CanCast(TouchofDeath) && UseTouchofDeath == "Always" && API.TargetHealthPercent <= 15)
+            if (API.CanCast(TouchofDeath) && (UseTouchofDeath == "Always" && API.TargetHealthPercent <= 15 || UseTouchofDeath == "Pride Mob" && API.TargetGUIDNPCID == 173729 && TargetCurrentHealth < PlayerCurrentHealth))
             {
                 API.CastSpell(TouchofDeath);
                 return;
@@ -325,10 +330,10 @@ namespace HyperElk.Core
             }
             //actions+=/potion,if=(buff.serenity.up|buff.storm_earth_and_fire.up)&pet.xuen_the_white_tiger.active|fight_remains<=60
             //actions+=/call_action_list,name=serenity,if=buff.serenity.up
-            if (API.PlayerHasBuff(Serenity) && IsMelee && !API.PlayerIsCasting(false))
+            if (API.PlayerHasBuff(Serenity) && IsMelee && !API.PlayerIsCasting(false) && !CurrentCastFistsOfFury)
             {
                 //actions.serenity=fists_of_fury,if=buff.serenity.remains<1
-                if (API.CanCast(FistsofFury) && API.PlayerBuffTimeRemaining(Serenity) < 100)
+                if (API.CanCast(FistsofFury) && API.PlayerBuffTimeRemaining(Serenity) < 300)
                 {
                     API.CastSpell(FistsofFury);
                     return;
@@ -395,7 +400,7 @@ namespace HyperElk.Core
                 }
             }
             //actions+=/call_action_list,name=weapons_of_order,if=buff.weapons_of_order.up
-            if (API.PlayerHasBuff(WeaponsofOrder) && IsMelee && !API.PlayerIsCasting(false))
+            if (API.PlayerHasBuff(WeaponsofOrder) && IsMelee && !API.PlayerIsCasting(false) && !CurrentCastFistsOfFury)
             {
 
                 //actions.weapons_of_order+=/call_action_list,name=cd_sef,if=!talent.serenity
@@ -498,7 +503,7 @@ namespace HyperElk.Core
                     }
                 }
                 //actions.weapons_of_order+=/call_action_list,name=cd_serenity,if=talent.serenity
-                if (IsCooldowns && TalentSerenty)
+                if (IsCooldowns && TalentSerenty && !CurrentCastFistsOfFury)
                 {
                     //actions.cd_serenity=variable,name=serenity_burst,op=set,value=cooldown.serenity.remains<1|pet.xuen_the_white_tiger.active&cooldown.serenity.remains>30|fight_remains<20
                     //actions.cd_serenity+=/invoke_xuen_the_white_tiger,if=!variable.hold_xuen|fight_remains<25
@@ -551,7 +556,7 @@ namespace HyperElk.Core
                     }
                     //actions.cd_serenity+=/touch_of_karma,if=fight_remains>90|pet.xuen_the_white_tiger.active|fight_remains<10
                     //actions.cd_serenity+=/weapons_of_order,if=cooldown.rising_sun_kick.remains<execute_time
-                    if (API.CanCast(WeaponsofOrder) && UseWeaponsofOrder == "with Cooldowns" && API.SpellCDDuration(RisingSunKick) < API.TargetTimeToExec)
+                    if (API.CanCast(WeaponsofOrder) && UseWeaponsofOrder == "with Cooldowns")
                     {
                         API.CastSpell(WeaponsofOrder);
                         return;
@@ -600,7 +605,7 @@ namespace HyperElk.Core
                     return;
                 }
                 //actions.weapons_of_order+=/fists_of_fury,if=active_enemies>=2&buff.weapons_of_order_ww.remains<1
-                if (API.CanCast(FistsofFury) && API.PlayerUnitInMeleeRangeCount >= 2 && API.PlayerBuffTimeRemaining(WeaponsofOrder) < 100)
+                if (API.CanCast(FistsofFury) && API.PlayerUnitInMeleeRangeCount >= 2 && API.PlayerBuffTimeRemaining(WeaponsofOrder) <= 300)
                 {
                     API.CastSpell(FistsofFury);
                     return;
@@ -721,25 +726,25 @@ namespace HyperElk.Core
                 }
             }
             //actions+=/fist_of_the_white_tiger,target_if=min:debuff.mark_of_the_crane.remains,if=chi.max-chi>=3&(energy.time_to_max<1|energy.time_to_max<4&cooldown.fists_of_fury.remains<1.5|cooldown.weapons_of_order.remains<2)
-            if (API.CanCast(FistsoftheWhiteTiger) && TalentFistoftheWhiteTiger && ChiDeficit >= 3 && (EnergyTimeToMax <100 || EnergyTimeToMax < 400 && API.SpellCDDuration(FistsofFury) < 150 || API.SpellCDDuration(WeaponsofOrder) < 200))
+            if (API.CanCast(FistsoftheWhiteTiger) && !CurrentCastFistsOfFury && TalentFistoftheWhiteTiger && ChiDeficit >= 3 && (EnergyTimeToMax <100 || EnergyTimeToMax < 400 && API.SpellCDDuration(FistsofFury) < 150 || API.SpellCDDuration(WeaponsofOrder) < 200))
             {
                 API.CastSpell(FistsoftheWhiteTiger);
                 return;
             }
             //actions+=/expel_harm,if=chi.max-chi>=1&(energy.time_to_max<1|cooldown.serenity.remains<2|energy.time_to_max<4&cooldown.fists_of_fury.remains<1.5|cooldown.weapons_of_order.remains<2)
-            if (API.CanCast(ExpelHarm) && ChiDeficit >= 1 && (EnergyTimeToMax < 100 || API.SpellCDDuration(Serenity) < 200 && TalentSerenty || EnergyTimeToMax < 400 && API.SpellCDDuration(FistsofFury) < 150 || API.SpellCDDuration(WeaponsofOrder) < 200))
+            if (API.CanCast(ExpelHarm) && ChiDeficit >= 1 && !CurrentCastFistsOfFury && (EnergyTimeToMax < 100 || API.SpellCDDuration(Serenity) < 200 && TalentSerenty || EnergyTimeToMax < 400 && API.SpellCDDuration(FistsofFury) < 150 || API.SpellCDDuration(WeaponsofOrder) < 200))
             {
                 API.CastSpell(ExpelHarm);
                 return;
             }
             //actions+=/tiger_palm,target_if=min:debuff.mark_of_the_crane.remains,if=combo_strike&chi.max-chi>=2&(energy.time_to_max<1|cooldown.serenity.remains<2|energy.time_to_max<4&cooldown.fists_of_fury.remains<1.5|cooldown.weapons_of_order.remains<2)
-            if (API.CanCast(TigerPalm) && !LastCastTigerPalm && ChiDeficit >= 2 && (EnergyTimeToMax < 100 || API.SpellCDDuration(Serenity) < 200 && TalentSerenty || EnergyTimeToMax < 400 && API.SpellCDDuration(FistsofFury) < 150 || API.SpellCDDuration(WeaponsofOrder) < 200))
+            if (API.CanCast(TigerPalm) && !LastCastTigerPalm && !CurrentCastFistsOfFury && ChiDeficit >= 2 && (EnergyTimeToMax < 100 || API.SpellCDDuration(Serenity) < 200 && TalentSerenty || EnergyTimeToMax < 400 && API.SpellCDDuration(FistsofFury) < 150 || API.SpellCDDuration(WeaponsofOrder) < 200))
             {
                 API.CastSpell(TigerPalm);
                 return;
             }
             //actions+=/call_action_list,name=cd_sef,if=!talent.serenity
-            if (IsCooldowns && !TalentSerenty)
+            if (IsCooldowns && !TalentSerenty && !CurrentCastFistsOfFury)
             {
                 //actions.cd_sef=invoke_xuen_the_white_tiger,if=!variable.hold_xuen|fight_remains<25
                 if (API.CanCast(InvokeXuen) && UseInvokeXuen == "with Cooldowns" && (!HoldXuen || API.TargetTimeToDie < 25000))
@@ -754,7 +759,7 @@ namespace HyperElk.Core
                     return;
                 }
                 //actions.cd_sef+=/weapons_of_order,if=(raid_event.adds.in>45|raid_event.adds.up)&cooldown.rising_sun_kick.remains<execute_time
-                if (API.CanCast(WeaponsofOrder) && UseWeaponsofOrder == "with Cooldowns" && API.SpellCDDuration(RisingSunKick) < API.TargetTimeToExec)
+                if (API.CanCast(WeaponsofOrder) && UseWeaponsofOrder == "with Cooldowns")
                 {
                     API.CastSpell(WeaponsofOrder);
                     return;
@@ -839,7 +844,7 @@ namespace HyperElk.Core
                 }
             }
             //actions+=/call_action_list,name=cd_serenity,if=talent.serenity
-            if (IsCooldowns && TalentSerenty)
+            if (IsCooldowns && TalentSerenty && !CurrentCastFistsOfFury)
             {
                 //actions.cd_serenity=variable,name=serenity_burst,op=set,value=cooldown.serenity.remains<1|pet.xuen_the_white_tiger.active&cooldown.serenity.remains>30|fight_remains<20
                 //actions.cd_serenity+=/invoke_xuen_the_white_tiger,if=!variable.hold_xuen|fight_remains<25
@@ -892,7 +897,7 @@ namespace HyperElk.Core
                 }
                 //actions.cd_serenity+=/touch_of_karma,if=fight_remains>90|pet.xuen_the_white_tiger.active|fight_remains<10
                 //actions.cd_serenity+=/weapons_of_order,if=cooldown.rising_sun_kick.remains<execute_time
-                if (API.CanCast(WeaponsofOrder) && UseWeaponsofOrder == "with Cooldowns" && API.SpellCDDuration(RisingSunKick) < API.TargetTimeToExec)
+                if (API.CanCast(WeaponsofOrder) && UseWeaponsofOrder == "with Cooldowns")
                 {
                     API.CastSpell(WeaponsofOrder);
                     return;
@@ -929,7 +934,7 @@ namespace HyperElk.Core
                 }
             }
             //actions+=/call_action_list,name=st,if=active_enemies<3
-            if ((IsAOE && API.PlayerUnitInMeleeRangeCount <= AOEUnitNumber || !IsAOE) && NotCasting && IsMelee)
+            if ((IsAOE && API.PlayerUnitInMeleeRangeCount <= AOEUnitNumber || !IsAOE) && NotCasting && IsMelee && !CurrentCastFistsOfFury)
             {
                 //actions.st=whirling_dragon_punch,if=raid_event.adds.in>cooldown.whirling_dragon_punch.duration*0.8|raid_event.adds.up
                 if (API.CanCast(WhirlingDragonPunch) && TalentWhirlingDragonPunch)
@@ -956,13 +961,13 @@ namespace HyperElk.Core
                     return;
                 }
                 //actions.st+=/fists_of_fury,if=(raid_event.adds.in>cooldown.fists_of_fury.duration*0.8|raid_event.adds.up)&(energy.time_to_max>execute_time-1|chi.max-chi<=1|buff.storm_earth_and_fire.remains<execute_time+1)|fight_remains<execute_time+1
-                if (API.CanCast(FistsofFury) && API.PlayerCurrentChi >= 3 && (EnergyTimeToMax > API.TargetTimeToExec - 100 || ChiDeficit <= 1 || API.PlayerBuffTimeRemaining(StormEarthandFire) < API.TargetTimeToExec + 100))
+                if (API.CanCast(FistsofFury) && API.PlayerCurrentChi >= 3 && (EnergyTimeToMax > FoFCastTime - 100 || ChiDeficit <= 1 || API.PlayerBuffTimeRemaining(StormEarthandFire) < FoFCastTime + 100))
                 {
                     API.CastSpell(FistsofFury);
                     return;
                 }
                 //actions.st+=/crackling_jade_lightning,if=buff.the_emperors_capacitor.stack>19&energy.time_to_max>execute_time-1&cooldown.rising_sun_kick.remains>execute_time|buff.the_emperors_capacitor.stack>14&(cooldown.serenity.remains<5&talent.serenity|cooldown.weapons_of_order.remains<5&covenant.kyrian|fight_remains<5)
-                if (API.CanCast(CracklingJadeLightning) && API.PlayerBuffStacks(TheEmperorsCapacitor) > 19 && EnergyTimeToMax > API.TargetTimeToExec - 100 && API.SpellCDDuration(RisingSunKick) > API.TargetTimeToExec)
+                if (API.CanCast(CracklingJadeLightning) && API.PlayerBuffStacks(TheEmperorsCapacitor) > 19 && EnergyTimeToMax > CJLCastTime - 100 && API.SpellCDDuration(RisingSunKick) > CJLCastTime)
                 {
                     API.CastSpell(CracklingJadeLightning);
                     return;
@@ -1043,7 +1048,7 @@ namespace HyperElk.Core
                 //
             }
             //actions+=/call_action_list,name=aoe,if=active_enemies>=3
-            if (IsAOE && API.PlayerUnitInMeleeRangeCount >= AOEUnitNumber && NotCasting && IsMelee)
+            if (IsAOE && API.PlayerUnitInMeleeRangeCount >= AOEUnitNumber && NotCasting && IsMelee && !CurrentCastFistsOfFury)
             {
                 //actions.aoe=whirling_dragon_punch
                 if (API.CanCast(WhirlingDragonPunch) && TalentWhirlingDragonPunch)
@@ -1064,7 +1069,7 @@ namespace HyperElk.Core
                     return;
                 }
                 //actions.aoe+=/fists_of_fury,if=energy.time_to_max>execute_time|chi.max-chi<=1
-                if (API.CanCast(FistsofFury) && (EnergyTimeToMax > API.TargetTimeToExec || ChiDeficit <= 1))
+                if (API.CanCast(FistsofFury) && (EnergyTimeToMax > FoFCastTime || ChiDeficit <= 1))
                 {
                     API.CastSpell(FistsofFury);
                     return;
@@ -1100,7 +1105,7 @@ namespace HyperElk.Core
                     return;
                 }
                 //actions.aoe+=/crackling_jade_lightning,if=buff.the_emperors_capacitor.stack>19&energy.time_to_max>execute_time-1&cooldown.fists_of_fury.remains>execute_time
-                if (API.CanCast(CracklingJadeLightning) && API.PlayerBuffStacks(TheEmperorsCapacitor) > 19 && EnergyTimeToMax > API.TargetTimeToExec - 100 && API.SpellCDDuration(FistsofFury) > API.TargetTimeToExec)
+                if (API.CanCast(CracklingJadeLightning) && API.PlayerBuffStacks(TheEmperorsCapacitor) > 19 && EnergyTimeToMax > FoFCastTime - 100 && API.SpellCDDuration(FistsofFury) > FoFCastTime)
                 {
                     API.CastSpell(CracklingJadeLightning);
                     return;
