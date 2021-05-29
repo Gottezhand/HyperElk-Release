@@ -439,7 +439,7 @@ namespace HyperElk.Core
                     //actions.cd_sef+=/bonedust_brew,if=raid_event.adds.in>50|raid_event.adds.up,line_cd=60
                     if (API.CanCast(BonedustBrew) && UseBonedustBrew == "with Cooldowns" && PlayerCovenantSettings == "Necrolord")
                     {
-                        API.CanCast(BonedustBrew);
+                        API.CastSpell(BonedustBrew);
                         return;
                     }
                     //actions.cd_sef+=/storm_earth_and_fire_fixate,if=conduit.coordinated_offensive.enabled
@@ -779,7 +779,7 @@ namespace HyperElk.Core
                 //actions.cd_sef+=/bonedust_brew,if=raid_event.adds.in>50|raid_event.adds.up,line_cd=60
                 if (API.CanCast(BonedustBrew) && UseBonedustBrew == "with Cooldowns" && PlayerCovenantSettings == "Necrolord")
                 {
-                    API.CanCast(BonedustBrew);
+                    API.CastSpell(BonedustBrew);
                     return;
                 }
                 //actions.cd_sef+=/storm_earth_and_fire_fixate,if=conduit.coordinated_offensive.enabled
@@ -794,7 +794,6 @@ namespace HyperElk.Core
                 {
                     API.CastSpell(StormEarthandFire);
                     FocusHelper = 0;
-
                     return;
                 }
                 //actions.cd_sef+=/storm_earth_and_fire,if=covenant.kyrian&(buff.weapons_of_order.up|(fight_remains<cooldown.weapons_of_order.remains|cooldown.weapons_of_order.remains>cooldown.storm_earth_and_fire.full_recharge_time)&cooldown.fists_of_fury.remains<=9&chi>=2&cooldown.whirling_dragon_punch.remains<=12)
