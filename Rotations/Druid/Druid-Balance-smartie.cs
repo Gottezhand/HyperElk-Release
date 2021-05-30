@@ -53,6 +53,7 @@
 // v5.5 sooth
 // v5.6 small adjustment
 // v5.7 raging fix
+// v5.8 small change for non leggy convoke
 
 using System.Diagnostics;
 
@@ -216,7 +217,7 @@ namespace HyperElk.Core
         public override void Initialize()
         {
             CombatRoutine.Name = "Balance Druid by smartie";
-            API.WriteLog("Welcome to smartie`s Balance Druid v5.7");
+            API.WriteLog("Welcome to smartie`s Balance Druid v5.8");
             API.WriteLog("For this rota you need to following macros");
             API.WriteLog("MoonfireMO - /cast [@mouseover] Moonfire");
             API.WriteLog("SunfireMO - /cast [@mouseover] Sunfire");
@@ -767,6 +768,11 @@ namespace HyperElk.Core
                         {
                             if (HardAoE)
                             {
+                                if (API.CanCast(Starsurge) && !SaveAP && API.PlayerAstral >= 30 && IncaCelestial && IsCovenant && PlayerCovenantSettings == "Night Fae" && IsLegendary != "Balance of all things" && API.SpellCDDuration(ConvoketheSpirits) <= GCD && UseStarlord)
+                                {
+                                    API.CastSpell(Starsurge);
+                                    return;
+                                }
                                 if (PlayerCovenantSettings == "Night Fae" && IsLegendary == "Balance of all things")
                                 {
                                     if (API.CanCast(Starfall) && !SaveAP && API.PlayerBuffTimeRemaining(Starfall) <= 100 && API.PlayerAstral >= 50 && UseStarlord)
@@ -842,6 +848,11 @@ namespace HyperElk.Core
                                         API.CastSpell(Starsurge);
                                         return;
                                     }
+                                }
+                                if (API.CanCast(Starsurge) && !SaveAP && API.PlayerAstral >= 30 && IncaCelestial && IsCovenant && PlayerCovenantSettings == "Night Fae" && IsLegendary != "Balance of all things" && API.SpellCDDuration(ConvoketheSpirits) <= GCD && UseStarlord)
+                                {
+                                    API.CastSpell(Starsurge);
+                                    return;
                                 }
                                 if (API.CanCast(Sunfire) && PlayerLevel >= 23 && Eclipses && !DontDOT && API.TargetDebuffRemainingTime(Sunfire) < 300 && API.TargetTimeToDie >= 1600)
                                 {
