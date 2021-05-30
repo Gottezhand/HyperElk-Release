@@ -31,6 +31,7 @@
 // v3.7 small tweak for simps
 // v3.8 explosive protection
 // v3.9 hotfix
+// v4.0 low level fix
 
 using System.Linq;
 
@@ -99,7 +100,7 @@ namespace HyperElk.Core
         private bool IsMelee => API.TargetRange < 6;
         private float gcd => API.SpellGCDTotalDuration;
         //actions+=/variable,name=execute_phase,value=talent.massacre&target.health.pct<35|target.health.pct<20|target.health.pct>80&covenant.venthyr
-        bool WWup => (API.PlayerHasBuff(Whirlwind) && API.PlayerUnitInMeleeRangeCount >= AOEUnitNumber && IsAOE || API.PlayerUnitInMeleeRangeCount < AOEUnitNumber && IsAOE || !IsAOE);
+        bool WWup => ((API.PlayerHasBuff(Whirlwind) && PlayerLevel >= 37 || PlayerLevel < 37) && API.PlayerUnitInMeleeRangeCount >= AOEUnitNumber && IsAOE || API.PlayerUnitInMeleeRangeCount < AOEUnitNumber && IsAOE || !IsAOE);
         bool IsRecklessness => (UseRecklessness == "with Cooldowns" || UseRecklessness == "with Cooldowns or AoE" || UseRecklessness == "on mobcount or Cooldowns") && IsCooldowns || UseRecklessness == "always" || (UseRecklessness == "on AOE" || UseRecklessness == "with Cooldowns or AoE") && API.PlayerUnitInMeleeRangeCount >= AOEUnitNumber || (UseRecklessness == "on mobcount or Cooldowns" || UseRecklessness == "on mobcount") && API.PlayerUnitInMeleeRangeCount >= MobCount;
         bool IsSiegebreaker => (UseSiegebreaker == "with Cooldowns" || UseSiegebreaker == "with Cooldowns or AoE" || UseSiegebreaker == "on mobcount or Cooldowns") && IsCooldowns || UseSiegebreaker == "always" || (UseSiegebreaker == "on AOE" || UseSiegebreaker == "with Cooldowns or AoE") && API.PlayerUnitInMeleeRangeCount >= AOEUnitNumber || (UseSiegebreaker == "on mobcount or Cooldowns" || UseSiegebreaker == "on mobcount") && API.PlayerUnitInMeleeRangeCount >= MobCount;
         bool IsCovenant => (UseCovenant == "with Cooldowns" || UseCovenant == "with Cooldowns or AoE" || UseCovenant == "on mobcount or Cooldowns") && IsCooldowns || UseCovenant == "always" || (UseCovenant == "on AOE" || UseCovenant == "with Cooldowns or AoE") && API.PlayerUnitInMeleeRangeCount >= AOEUnitNumber || (UseCovenant == "on mobcount or Cooldowns" || UseCovenant == "on mobcount") && API.PlayerUnitInMeleeRangeCount >= MobCount;
@@ -155,7 +156,7 @@ namespace HyperElk.Core
         public override void Initialize()
         {
             CombatRoutine.Name = "Fury Warrior by smartie";
-            API.WriteLog("Welcome to smartie`s Fury Warrior v3.9");
+            API.WriteLog("Welcome to smartie`s Fury Warrior v4.0");
             API.WriteLog("For the Signet Legendary you need a macro to cancel Bladestorm");
             API.WriteLog("- /cancelaura Bladestorm - is the macro for that");
 
