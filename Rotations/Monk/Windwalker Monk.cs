@@ -129,6 +129,7 @@ namespace HyperElk.Core
         private string ChiEnergy = "Chi Energy";
         private string CoordinatedOffensive = "Coordinated Offensive";
         private string Fixate = "Storm,  Earth,  and Fire:  Fixate";
+        private string Detox = "Detox";
 
         private string LegSweep = "Leg Sweep";
         private bool MotC => (bool)CombatRoutine.GetProperty("MotC");
@@ -139,6 +140,11 @@ namespace HyperElk.Core
         private bool NeedBlackoutKick => API.PlayerHasBuff(WeaponsofOrder) && (API.SpellCDDuration(RisingSunKick) < API.PlayerBuffTimeRemaining(WeaponsofOrder) && API.PlayerBuffTimeRemaining(WeaponsofOrder) < 200 || API.SpellCDDuration(RisingSunKick) - API.SpellCDDuration(WeaponsofOrder) > 200 && API.PlayerBuffTimeRemaining(WeaponsofOrder) < 400);
         //actions+=/variable,name=hold_xuen,op=set,value=cooldown.invoke_xuen_the_white_tiger.remains>fight_remains|fight_remains<120&fight_remains>cooldown.serenity.remains&cooldown.serenity.remains>10
         private bool HoldXuen => API.SpellCDDuration(InvokeXuen) > API.TargetTimeToDie || API.TargetTimeToDie < 120 && API.TargetTimeToDie > API.SpellCDDuration(Serenity) && API.SpellCDDuration(Serenity) > 1000;
+        string[] DetoxList = { "Chilled", "Frozen Binds", "Clinging Darkness", "Rasping Scream", "Heaving Retch", "Goresplatter", "Slime Injection", "Gripping Infection", "Debilitating Plague", "Burning Strain", "Blightbeak", "Corroded Claws", "Wasting Blight", "Hurl Spores", "Corrosive Gunk", "Cytotoxic Slash", "Venompiercer", "Wretched Phlegm", "Bewildering Pollen", "Repulsive Visage", "Soul Split", "Anima Injection", "Bewildering Pollen2", "Bramblethorn Entanglement", "Debilitating Poison", "Sinlight Visions", "Siphon Life", "Turn to Stone", "Stony Veins", "Cosmic Artifice", "Wailing Grief", "Shadow Word:  Pain", "Anguished Cries", "Wrack Soul", "Dark Lance", "Insidious Venom", "Charged Anima", "Lost Confidence", "Burden of Knowledge", "Internal Strife", "Forced Confession", "Insidious Venom2", "Soul Corruption", "Genetic Alteration", "Withering Blight", "Decaying Blight" };
+        private static bool CanDetoxPlayer(string debuff)
+        {
+            return API.PlayerHasDebuff(debuff, false, true);
+        }
         public override void Initialize()
         {
             CombatRoutine.Name = "Windwalker Monk @Mufflon12";
@@ -203,6 +209,7 @@ namespace HyperElk.Core
             CombatRoutine.AddSpell(InvokeXuen, 123904, "F3");
             CombatRoutine.AddSpell(TouchofKarma, 122470, "NumPad3");
             CombatRoutine.AddSpell(LegSweep, 119381);
+            CombatRoutine.AddSpell(Detox, 115450);
 
 
             //Macro
@@ -233,6 +240,54 @@ namespace HyperElk.Core
 
             //Condition
             CombatRoutine.AddConduit(CoordinatedOffensive, 336598);
+            //Debuffs / Detox
+            CombatRoutine.AddDebuff("Chilled", 328664);
+            CombatRoutine.AddDebuff("Frozen Binds", 320788);
+            CombatRoutine.AddDebuff("Clinging Darkness", 323347);
+            CombatRoutine.AddDebuff("Rasping Scream", 324293);
+            CombatRoutine.AddDebuff("Heaving Retch", 320596);
+            CombatRoutine.AddDebuff("Goresplatter", 338353);
+            CombatRoutine.AddDebuff("Slime Injection", 329110);
+            CombatRoutine.AddDebuff("Gripping Infection", 328180);
+            CombatRoutine.AddDebuff("Debilitating Plague", 324652);
+            CombatRoutine.AddDebuff("Burning Strain", 322358);
+            CombatRoutine.AddDebuff("Blightbeak", 327882);
+            CombatRoutine.AddDebuff("Corroded Claws", 320512);
+            CombatRoutine.AddDebuff("Wasting Blight", 320542);
+            CombatRoutine.AddDebuff("Hurl Spores", 328002);
+            CombatRoutine.AddDebuff("Corrosive Gunk", 319070);
+            CombatRoutine.AddDebuff("Cytotoxic Slash", 325552);
+            CombatRoutine.AddDebuff("Venompiercer", 328395);
+            CombatRoutine.AddDebuff("Wretched Phlegm", 334926);
+            CombatRoutine.AddDebuff("Bewildering Pollen", 323137);
+            CombatRoutine.AddDebuff("Repulsive Visage", 328756);
+            CombatRoutine.AddDebuff("Soul Split", 322557);
+            CombatRoutine.AddDebuff("Anima Injection", 325224);
+            CombatRoutine.AddDebuff("Bewildering Pollen2", 321968);
+            CombatRoutine.AddDebuff("Bramblethorn Entanglement", 324859);
+            CombatRoutine.AddDebuff("Debilitating Poison", 326092);
+            CombatRoutine.AddDebuff("Sinlight Visions", 339237);
+            CombatRoutine.AddDebuff("Siphon Life", 325701);
+            CombatRoutine.AddDebuff("Turn to Stone", 326607);
+            CombatRoutine.AddDebuff("Stony Veins", 326632);
+            CombatRoutine.AddDebuff("Cosmic Artifice", 325725);
+            CombatRoutine.AddDebuff("Wailing Grief", 340026);
+            CombatRoutine.AddDebuff("Shadow Word:  Pain", 332707);
+            CombatRoutine.AddDebuff("Anguished Cries", 325885);
+            CombatRoutine.AddDebuff("Wrack Soul", 321038);
+            CombatRoutine.AddDebuff("Dark Lance", 327481);
+            CombatRoutine.AddDebuff("Insidious Venom", 323636);
+            CombatRoutine.AddDebuff("Charged Anima", 338731);
+            CombatRoutine.AddDebuff("Lost Confidence", 322818);
+            CombatRoutine.AddDebuff("Burden of Knowledge", 317963);
+            CombatRoutine.AddDebuff("Internal Strife", 327648);
+            CombatRoutine.AddDebuff("Forced Confession", 328331);
+            CombatRoutine.AddDebuff("Insidious Venom2", 317661);
+            CombatRoutine.AddDebuff("Soul Corruption", 333708);
+            CombatRoutine.AddDebuff("Genetic Alteration", 320248);
+            CombatRoutine.AddDebuff("Withering Blight", 341949);
+            CombatRoutine.AddDebuff("Decaying Blight", 330700);
+            CombatRoutine.AddDebuff("Infectious Rain", 322232);
 
             CombatRoutine.AddToggle("Mouseover");
 
@@ -314,6 +369,17 @@ namespace HyperElk.Core
             {
                 API.CastSpell(TouchofDeath);
                 return;
+            }
+            if (API.CanCast(Detox))
+            {
+                for (int i = 0; i < DetoxList.Length; i++)
+                {
+                    if (CanDetoxPlayer(DetoxList[i]) || API.PlayerDebuffStacks("Infectious Rain") >= 3)
+                    {
+                        API.CastSpell(Detox);
+                        return;
+                    }
+                }
             }
             //# Executed every time the actor is available.
             //actions=auto_attack
