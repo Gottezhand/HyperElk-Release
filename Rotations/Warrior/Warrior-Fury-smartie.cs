@@ -32,6 +32,7 @@
 // v3.8 explosive protection
 // v3.9 hotfix
 // v4.0 low level fix
+// v4.05 low level tweak
 
 using System.Linq;
 
@@ -156,7 +157,7 @@ namespace HyperElk.Core
         public override void Initialize()
         {
             CombatRoutine.Name = "Fury Warrior by smartie";
-            API.WriteLog("Welcome to smartie`s Fury Warrior v4.0");
+            API.WriteLog("Welcome to smartie`s Fury Warrior v4.05");
             API.WriteLog("For the Signet Legendary you need a macro to cancel Bladestorm");
             API.WriteLog("- /cancelaura Bladestorm - is the macro for that");
 
@@ -368,7 +369,7 @@ namespace HyperElk.Core
                     API.CastSpell("Cancel Bladestorm");
                     return;
                 }
-                if (API.CanCast(Whirlwind) && !isExplosive && PlayerLevel >= 9 && !CanBladestorm && !CanAA && (PlayerLevel < 22 && API.PlayerRage >= 30 || PlayerLevel >= 22) && (!API.PlayerHasBuff(Whirlwind) && PlayerLevel >= 37 || PlayerLevel < 37) && (API.PlayerUnitInMeleeRangeCount >= AOEUnitNumber && IsAOE))
+                if (API.CanCast(Whirlwind) && !isExplosive && PlayerLevel >= 37 && !CanBladestorm && !CanAA && !API.PlayerHasBuff(Whirlwind) && (API.PlayerUnitInMeleeRangeCount >= AOEUnitNumber && IsAOE))
                 {
                     API.CastSpell(Whirlwind);
                     return;
@@ -592,16 +593,16 @@ namespace HyperElk.Core
                     API.CastSpell(CrushingBlow);
                     return;
                 }
+                //Slam low level
+                if (API.CanCast(Slam) && API.PlayerRage >= 20 && PlayerLevel < 19 && (API.PlayerUnitInMeleeRangeCount < AoENumber || !IsAOE || PlayerLevel < 9))
+                {
+                    API.CastSpell(Slam);
+                    return;
+                }
                 //actions.single_target+=/whirlwind
                 if (API.CanCast(Whirlwind) && PlayerLevel >= 9 && (PlayerLevel < 22 && API.PlayerRage >= 30 || PlayerLevel >= 22))
                 {
                     API.CastSpell(Whirlwind);
-                    return;
-                }
-                //Slam low level
-                if (API.CanCast(Slam) && API.PlayerRage >= 20 && PlayerLevel < 19)
-                {
-                    API.CastSpell(Slam);
                     return;
                 }
             }
