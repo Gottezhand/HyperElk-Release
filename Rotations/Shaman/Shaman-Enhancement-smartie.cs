@@ -19,6 +19,7 @@
 // v2.6 explosive protection
 // v2.7 hotfix
 // v2.8 trinkets ignore
+// v2.9 auto dps potion added
 
 using System.Diagnostics;
 namespace HyperElk.Core
@@ -70,6 +71,7 @@ namespace HyperElk.Core
         private string WindfuryWeapon = "Windfury Weapon";
         private string FlametongueWeapon = "Flametongue Weapon";
         private string PrimalLavaActuators = "Primal Lava Actuators";
+        private string PotionofSpectralAgility = "Potion of Spectral Agility";
 
         //Talents
         bool TalentLashingFlames => API.PlayerIsTalentSelected(1, 1);
@@ -117,6 +119,7 @@ namespace HyperElk.Core
         private string UseFireNova => CDUsageWithAOE[CombatRoutine.GetPropertyInt(FireNova)];
         private string UseStormKeeper => CDUsageWithAOE[CombatRoutine.GetPropertyInt(StormKeeper)];
         private bool AutoWolf => CombatRoutine.GetPropertyBool("AutoWolf");
+        private bool UsePotion => CombatRoutine.GetPropertyBool("Potion");
         private string UseAutoWolf => Wolfoptions[CombatRoutine.GetPropertyInt("UseAutoWolf")];
         private bool Windfury => CombatRoutine.GetPropertyBool(WindfuryTotem);
         private bool WeaponEnchant => CombatRoutine.GetPropertyBool("WeaponEnchant");
@@ -136,7 +139,7 @@ namespace HyperElk.Core
         public override void Initialize()
         {
             CombatRoutine.Name = "Enhancement Shaman by smartie";
-            API.WriteLog("Welcome to smartie`s Enhancement Shaman v2.8");
+            API.WriteLog("Welcome to smartie`s Enhancement Shaman v2.9");
             API.WriteLog("For this rota you need to following macros");
             API.WriteLog("For Earthshield on Focus: /cast [@focus,help] Earth shield");
 
@@ -209,6 +212,7 @@ namespace HyperElk.Core
             //Item
             CombatRoutine.AddItem(PhialofSerenity, 177278);
             CombatRoutine.AddItem(SpiritualHealingPotion, 171267);
+            CombatRoutine.AddItem(PotionofSpectralAgility, 171270);
 
             //Prop
             CombatRoutine.AddProp("MobCount", "Mobcount to use Cooldowns ", numbRaidList, " Mobcount to use Cooldowns", "Cooldowns", 3);
@@ -225,6 +229,7 @@ namespace HyperElk.Core
             CombatRoutine.AddProp("EarthShield", "EarthShield", true, "Put" + EarthShield + " on ourselfs", "Generic");
             CombatRoutine.AddProp("UseAutoWolf", "Use " + GhostWolf, Wolfoptions, "Use " + GhostWolf + " only in Fight, out of Fight or both", "Generic", 0);
             CombatRoutine.AddProp("AutoWolf", "AutoWolf", true, "Will auto switch forms out of Fight", "Generic");
+            CombatRoutine.AddProp("Potion", "Use DPS Potion", false, "Will auto use DPS Potion", "Cooldowns");
             CombatRoutine.AddProp(WindfuryTotem, "Windfury Totem only when not moving", false, "Rota will use Windfury Totem only when not moving", "Generic");
             CombatRoutine.AddProp("WeaponEnchant", "WeaponEnchant", true, "Will auto enchant your Weapons", "Generic");
             CombatRoutine.AddProp("Doom Winds", "Doom Winds Legendary", false, "Pls enable if you have that Legendary", "Generic");
@@ -290,12 +295,12 @@ namespace HyperElk.Core
                     API.CastSpell(AstralShift);
                     return;
                 }
-                if (API.PlayerItemCanUse(PhialofSerenity) && API.PlayerItemRemainingCD(PhialofSerenity) == 0 && API.PlayerHealthPercent <= PhialofSerenityLifePercent)
+                if (API.PlayerItemCanUse(PhialofSerenity) && !API.MacroIsIgnored(PhialofSerenity) && API.PlayerItemRemainingCD(PhialofSerenity) == 0 && API.PlayerHealthPercent <= PhialofSerenityLifePercent)
                 {
                     API.CastSpell(PhialofSerenity);
                     return;
                 }
-                if (API.PlayerItemCanUse(SpiritualHealingPotion) && API.PlayerItemRemainingCD(SpiritualHealingPotion) == 0 && API.PlayerHealthPercent <= SpiritualHealingPotionLifePercent)
+                if (API.PlayerItemCanUse(SpiritualHealingPotion) && !API.MacroIsIgnored(SpiritualHealingPotion) && API.PlayerItemRemainingCD(SpiritualHealingPotion) == 0 && API.PlayerHealthPercent <= SpiritualHealingPotionLifePercent)
                 {
                     API.CastSpell(SpiritualHealingPotion);
                     return;
@@ -387,6 +392,12 @@ namespace HyperElk.Core
             if (API.CanCast(FlametongueWeapon) && WeaponEnchant && API.LastSpellCastInGame != (FlametongueWeapon) && API.PlayerWeaponBuffDuration(false) < 3000)
             {
                 API.CastSpell(FlametongueWeapon);
+                return;
+            }
+            //Potion
+            if (API.PlayerItemCanUse(PotionofSpectralAgility) && !API.MacroIsIgnored(PotionofSpectralAgility) && API.PlayerItemRemainingCD(PotionofSpectralAgility) == 0 && IsCooldowns && API.PlayerHasBuff(Ascendance))
+            {
+                API.CastSpell(PotionofSpectralAgility);
                 return;
             }
             //actions +=/ blood_fury,if= !talent.ascendance.enabled | buff.ascendance.up | cooldown.ascendance.remains > 50
