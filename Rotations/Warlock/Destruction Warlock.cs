@@ -118,6 +118,7 @@ namespace HyperElk.Core
 
         private bool UseImmolateMO => (bool)CombatRoutine.GetProperty("ImmolateMO");
         private bool Quaking => (API.PlayerCurrentCastTimeRemaining >= 200 || API.PlayerIsChanneling) && API.PlayerDebuffRemainingTime(Quake) < 200 && API.PlayerHasDebuff(Quake);
+        private bool SaveQuake => API.PlayerHasDebuff(Quake) && API.PlayerDebuffRemainingTime(Quake) > 200 || !API.PlayerHasDebuff(Quake);
 
         public override void Initialize()
         {
@@ -259,8 +260,6 @@ namespace HyperElk.Core
         }
         public override void CombatPulse()
         {
-            if (API.PlayerHasDebuff(Quake) && API.PlayerDebuffRemainingTime(Quake) < 200)
-                return;
             if (isInterrupt && API.CanCast(SpellLock) && API.PlayerHasPet && isMisdirection == "Felhunter")
             {
                 API.CastSpell(SpellLock);
@@ -295,13 +294,13 @@ namespace HyperElk.Core
                 return;
             }
             // Drain Life
-            if (API.PlayerHealthPercent <= DrainLifePercentProc && API.CanCast(DrainLife) && NotChanneling)
+            if (API.PlayerHealthPercent <= DrainLifePercentProc && API.CanCast(DrainLife) && SaveQuake && NotChanneling)
             {
                 API.CastSpell(DrainLife);
                 return;
             }
             // Health Funnel
-            if (API.CanCast(HealthFunnel) && API.PlayerHasPet && API.PetHealthPercent > 0 && API.PetHealthPercent <= HealthFunnelPercentProc && NotChanneling)
+            if (API.CanCast(HealthFunnel) && SaveQuake && API.PlayerHasPet && API.PetHealthPercent > 0 && API.PetHealthPercent <= HealthFunnelPercentProc && NotChanneling)
             {
                 API.CastSpell(HealthFunnel);
                 return;
@@ -329,32 +328,32 @@ namespace HyperElk.Core
             if (HavocWatch.IsRunning && NotCasting)
             {
                 //actions.havoc=conflagrate,if=buff.backdraft.down&soul_shard>=1&soul_shard<=4
-                if (API.CanCast(Conflagrate) && HavocWatch.IsRunning && !LastCastConflagrate && !API.PlayerHasBuff(Backdraft) && API.PlayerCurrentSoulShards >= 1 && API.PlayerCurrentSoulShards <= 4)
+                if (API.CanCast(Conflagrate) && SaveQuake && HavocWatch.IsRunning && !LastCastConflagrate && !API.PlayerHasBuff(Backdraft) && API.PlayerCurrentSoulShards >= 1 && API.PlayerCurrentSoulShards <= 4)
                 {
                     API.CastSpell(Conflagrate);
                     return;
                 }
                 //actions.havoc+=/soul_fire,if=cast_time<havoc_remains
-                if (TalentSoulFire && API.CanCast(SoulFire) && HavocWatch.IsRunning && SFTime <= HavocTime)
+                if (TalentSoulFire && API.CanCast(SoulFire) && SaveQuake && HavocWatch.IsRunning && SFTime <= HavocTime)
                 {
                     API.CastSpell(SoulFire);
                     return;
                 }
                 //actions.havoc+=/decimating_bolt,if=cast_time<havoc_remains&soulbind.lead_by_example.enabled
-                if (API.CanCast(DecimatingBolt) && PlayerCovenantSettings == "Necrolord" && HavocWatch.IsRunning && DBTime <= HavocTime)
+                if (API.CanCast(DecimatingBolt) && SaveQuake && PlayerCovenantSettings == "Necrolord" && HavocWatch.IsRunning && DBTime <= HavocTime)
                 {
                     API.CanCast(DecimatingBolt);
                     return;
                 }
                 //actions.havoc+=/scouring_tithe,if=cast_time<havoc_remains
-                if (API.CanCast(ScouringTithe) && PlayerCovenantSettings == "Kyrian" && HavocWatch.IsRunning && SCTime <= HavocTime)
+                if (API.CanCast(ScouringTithe) && SaveQuake && PlayerCovenantSettings == "Kyrian" && HavocWatch.IsRunning && SCTime <= HavocTime)
                 {
                     API.CastSpell(ScouringTithe);
                     return;
                 }
                 //actions.havoc+=/immolate,if=talent.internal_combustion.enabled&remains<duration*0.5|!talent.internal_combustion.enabled&refreshable
                 //actions.havoc+=/chaos_bolt,if=cast_time<havoc_remains
-                if (API.CanCast(ChaosBolt) && HavocWatch.IsRunning && CBTime <= HavocTime)
+                if (API.CanCast(ChaosBolt) && SaveQuake && HavocWatch.IsRunning && CBTime <= HavocTime)
                 {
                     API.CastSpell(ChaosBolt);
                     return;
@@ -367,20 +366,20 @@ namespace HyperElk.Core
                 }
 
                 //actions.havoc+=/incinerate,if=cast_time<havoc_remains
-                if (API.CanCast(Incinerate) && HavocWatch.IsRunning && IncinerateTime <= HavocTime)
+                if (API.CanCast(Incinerate) && SaveQuake && HavocWatch.IsRunning && IncinerateTime <= HavocTime)
                 {
                     API.CastSpell(Incinerate);
                     return;
                 }
             }
             //actions+=/conflagrate,if=talent.roaring_blaze.enabled&debuff.roaring_blaze.remains<1.5
-            if (API.CanCast(Conflagrate) && NotCasting && !LastCastConflagrate && TalentRoaringBlaze && API.TargetDebuffRemainingTime(RoaringBlaze) <= 150)
+            if (API.CanCast(Conflagrate) && SaveQuake && NotCasting && !LastCastConflagrate && TalentRoaringBlaze && API.TargetDebuffRemainingTime(RoaringBlaze) <= 150)
             {
                 API.CastSpell(Conflagrate);
                 return;
             }
             //actions+=/cataclysm,if=!(pet.infernal.active&dot.immolate.remains+1>pet.infernal.remains)|spell_targets.cataclysm>1
-            if (API.CanCast(Cataclysm) && TalentCataclysm)
+            if (API.CanCast(Cataclysm) && SaveQuake && TalentCataclysm)
             {
                 API.CastSpell(Cataclysm);
                 return;
@@ -390,19 +389,19 @@ namespace HyperElk.Core
             if (IsAOE && API.TargetUnitInRangeCount >= AOEUnitNumber && NotCasting)
             {
                 //actions.aoe=rain_of_fire,if=pet.infernal.active&(!cooldown.havoc.ready|active_enemies>3)
-                if (API.CanCast(RainOfFire) && API.PlayerCurrentSoulShards >= 3 && InfernalWatch.IsRunning && (API.SpellISOnCooldown(Havoc) || API.TargetUnitInRangeCount > 3))
+                if (API.CanCast(RainOfFire) && SaveQuake && API.PlayerCurrentSoulShards >= 3 && InfernalWatch.IsRunning && (API.SpellISOnCooldown(Havoc) || API.TargetUnitInRangeCount > 3))
                 {
                     API.CastSpell(RainOfFire);
                     return;
                 }
                 //actions.aoe+=/soul_rot
-                if (API.CanCast(SoulRot) && PlayerCovenantSettings == "Night Fae" && (UseCovenantAbility == "always" || UseCovenantAbility == "AOE" && IsAOE || UseCovenantAbility == "Cooldowns" && IsCooldowns))
+                if (API.CanCast(SoulRot) && SaveQuake && PlayerCovenantSettings == "Night Fae" && (UseCovenantAbility == "always" || UseCovenantAbility == "AOE" && IsAOE || UseCovenantAbility == "Cooldowns" && IsCooldowns))
                 {
                     API.CastSpell(SoulRot);
                     return;
                 }
                 //actions.aoe+=/channel_demonfire,if=dot.immolate.remains>cast_time
-                if (API.CanCast(ChannelDemonFire) && API.TargetDebuffRemainingTime(Immolate) > DemonfireTime)
+                if (API.CanCast(ChannelDemonFire) && SaveQuake && API.TargetDebuffRemainingTime(Immolate) > DemonfireTime)
                 {
                     API.CastSpell(ChannelDemonFire);
                     return;
@@ -452,32 +451,32 @@ namespace HyperElk.Core
                 //actions.aoe+=/call_action_list,name=essences
                 //actions.aoe+=/havoc,cycle_targets=1,if=!(target=self.target)&active_enemies<4
                 //actions.aoe+=/rain_of_fire
-                if (API.CanCast(RainOfFire) && NotCasting && API.PlayerCurrentSoulShards >= 3 && API.TargetUnitInRangeCount >= 3)
+                if (API.CanCast(RainOfFire) && SaveQuake && NotCasting && API.PlayerCurrentSoulShards >= 3 && API.TargetUnitInRangeCount >= 3)
                 {
                     API.CastSpell(RainOfFire);
                     return;
                 }
                 //actions.aoe+=/havoc,cycle_targets=1,if=!(self.target=target)
                 //actions.aoe+=/decimating_bolt,if=(soulbind.lead_by_example.enabled|!talent.fire_and_brimstone.enabled)
-                if (API.CanCast(DecimatingBolt) && NotCasting && (IsLeadByExample || !TalentFireandBrimstone) && PlayerCovenantSettings == "Necrolord" && (UseCovenantAbility == "always" || UseCovenantAbility == "AOE" && IsAOE || UseCovenantAbility == "Cooldowns" && IsCooldowns))
+                if (API.CanCast(DecimatingBolt) && SaveQuake && NotCasting && (IsLeadByExample || !TalentFireandBrimstone) && PlayerCovenantSettings == "Necrolord" && (UseCovenantAbility == "always" || UseCovenantAbility == "AOE" && IsAOE || UseCovenantAbility == "Cooldowns" && IsCooldowns))
                 {
                     API.CastSpell(DecimatingBolt);
                     return;
                 }
                 //actions.aoe+=/incinerate,if=talent.fire_and_brimstone.enabled&buff.backdraft.up&soul_shard<5-0.2*active_enemies
-                if (API.CanCast(Incinerate) && NotCasting && TalentFireandBrimstone && API.PlayerHasBuff(Backdraft) && API.PlayerCurrentSoulShards <= 5)
+                if (API.CanCast(Incinerate) && SaveQuake && NotCasting && TalentFireandBrimstone && API.PlayerHasBuff(Backdraft) && API.PlayerCurrentSoulShards <= 5)
                 {
                     API.CastSpell(Incinerate);
                     return;
                 }
                 //actions.aoe+=/soul_fire
-                if (API.CanCast(SoulFire) && NotCasting && TalentSoulFire)
+                if (API.CanCast(SoulFire) && SaveQuake && NotCasting && TalentSoulFire)
                 {
                     API.CastSpell(SoulFire);
                     return;
                 }
                 //actions.aoe+=/conflagrate,if=buff.backdraft.down
-                if (API.CanCast(Conflagrate) && NotCasting && !LastCastConflagrate && !API.PlayerHasBuff(Backdraft))
+                if (API.CanCast(Conflagrate) && SaveQuake && NotCasting && !LastCastConflagrate && !API.PlayerHasBuff(Backdraft))
                 {
                     API.CastSpell(Conflagrate);
                     return;
@@ -489,32 +488,32 @@ namespace HyperElk.Core
                     return;
                 }
                 //actions.aoe+=/scouring_tithe,if=!(talent.fire_and_brimstone.enabled|talent.inferno.enabled)
-                if (API.CanCast(ScouringTithe) && NotCasting && (!TalentFireandBrimstone || !TalentInferno) && PlayerCovenantSettings == "Kyrian" && (UseCovenantAbility == "always" || UseCovenantAbility == "AOE" && IsAOE || UseCovenantAbility == "Cooldowns" && IsCooldowns))
+                if (API.CanCast(ScouringTithe) && SaveQuake && NotCasting && (!TalentFireandBrimstone || !TalentInferno) && PlayerCovenantSettings == "Kyrian" && (UseCovenantAbility == "always" || UseCovenantAbility == "AOE" && IsAOE || UseCovenantAbility == "Cooldowns" && IsCooldowns))
                 {
                     API.CastSpell(ScouringTithe);
                     return;
                 }
                 //actions.aoe+=/impending_catastrophe,if=!(talent.fire_and_brimstone.enabled|talent.inferno.enabled)
-                if (API.CanCast(ImpendingCatastrophe) && NotCasting && (!TalentFireandBrimstone || !TalentInferno) && PlayerCovenantSettings == "Venthyr" && (UseCovenantAbility == "always" || UseCovenantAbility == "AOE" && IsAOE || UseCovenantAbility == "Cooldowns" && IsCooldowns))
+                if (API.CanCast(ImpendingCatastrophe) && SaveQuake && NotCasting && (!TalentFireandBrimstone || !TalentInferno) && PlayerCovenantSettings == "Venthyr" && (UseCovenantAbility == "always" || UseCovenantAbility == "AOE" && IsAOE || UseCovenantAbility == "Cooldowns" && IsCooldowns))
                 {
                     API.CastSpell(ImpendingCatastrophe);
                     return;
                 }
                 //actions.aoe+=/incinerate
-                if (API.CanCast(Incinerate))
+                if (API.CanCast(Incinerate) && SaveQuake)
                 {
                     API.CastSpell(Incinerate);
                     return;
                 }
             }
             //actions+=/soul_fire,cycle_targets=1,if=refreshable&soul_shard<=4&(!talent.cataclysm.enabled|cooldown.cataclysm.remains>remains)
-            if (API.CanCast(SoulFire) && NotCasting && TalentSoulFire && API.PlayerCurrentSoulShards <= 4 && (!TalentCataclysm || API.SpellISOnCooldown(Cataclysm)))
+            if (API.CanCast(SoulFire) && SaveQuake && NotCasting && TalentSoulFire && API.PlayerCurrentSoulShards <= 4 && (!TalentCataclysm || API.SpellISOnCooldown(Cataclysm)))
             {
                 API.CastSpell(SoulFire);
                 return;
             }
             //actions+=/immolate,cycle_targets=1,if=refreshable&(!talent.cataclysm.enabled|cooldown.cataclysm.remains>remains)
-            if (API.CanCast(Immolate) && NotCasting && !LastCastImmolate && API.TargetDebuffRemainingTime(Immolate) < 250)
+            if (API.CanCast(Immolate) && SaveQuake && NotCasting && !LastCastImmolate && API.TargetDebuffRemainingTime(Immolate) < 250)
             {
                 API.CastSpell(Immolate);
                 return;
@@ -558,32 +557,32 @@ namespace HyperElk.Core
             }
             //actions+=/call_action_list,name=essences
             //actions+=/channel_demonfire
-            if (API.CanCast(ChannelDemonFire) && NotCasting)
+            if (API.CanCast(ChannelDemonFire) && SaveQuake && NotCasting)
             {
                 API.CastSpell(ChannelDemonFire);
                 return;
             }
             //actions+=/scouring_tithe
-            if (API.CanCast(ScouringTithe) && NotCasting && PlayerCovenantSettings == "Kyrian" && (UseCovenantAbility == "always" || UseCovenantAbility == "AOE" && IsAOE || UseCovenantAbility == "Cooldowns" && IsCooldowns) && NotCasting)
+            if (API.CanCast(ScouringTithe) && SaveQuake && NotCasting && PlayerCovenantSettings == "Kyrian" && (UseCovenantAbility == "always" || UseCovenantAbility == "AOE" && IsAOE || UseCovenantAbility == "Cooldowns" && IsCooldowns) && NotCasting)
             {
                 API.CastSpell(ScouringTithe);
                 return;
             }
             //actions+=/decimating_bolt
-            if (API.CanCast(DecimatingBolt) && NotCasting && PlayerCovenantSettings == "Necrolord" && (UseCovenantAbility == "always" || UseCovenantAbility == "AOE" && IsAOE || UseCovenantAbility == "Cooldowns" && IsCooldowns) && NotCasting)
+            if (API.CanCast(DecimatingBolt) && SaveQuake && NotCasting && PlayerCovenantSettings == "Necrolord" && (UseCovenantAbility == "always" || UseCovenantAbility == "AOE" && IsAOE || UseCovenantAbility == "Cooldowns" && IsCooldowns) && NotCasting)
             {
                 API.CastSpell(DecimatingBolt);
                 return;
             }
             //actions+=/havoc,cycle_targets=1,if=!(target=self.target)&(dot.immolate.remains>dot.immolate.duration*0.5|!talent.internal_combustion.enabled)
             //actions+=/impending_catastrophe
-            if (API.CanCast(ImpendingCatastrophe) && NotCasting && PlayerCovenantSettings == "Venthyr" && (UseCovenantAbility == "always" || UseCovenantAbility == "AOE" && IsAOE || UseCovenantAbility == "Cooldowns" && IsCooldowns) && NotCasting)
+            if (API.CanCast(ImpendingCatastrophe) && SaveQuake && NotCasting && PlayerCovenantSettings == "Venthyr" && (UseCovenantAbility == "always" || UseCovenantAbility == "AOE" && IsAOE || UseCovenantAbility == "Cooldowns" && IsCooldowns) && NotCasting)
             {
                 API.CastSpell(ImpendingCatastrophe);
                 return;
             }
             //actions+=/soul_rot
-            if (API.CanCast(SoulRot) && NotCasting && PlayerCovenantSettings == "Night Fae" && (UseCovenantAbility == "always" || UseCovenantAbility == "AOE" && IsAOE || UseCovenantAbility == "Cooldowns" && IsCooldowns) && NotCasting)
+            if (API.CanCast(SoulRot) && SaveQuake && NotCasting && PlayerCovenantSettings == "Night Fae" && (UseCovenantAbility == "always" || UseCovenantAbility == "AOE" && IsAOE || UseCovenantAbility == "Cooldowns" && IsCooldowns) && NotCasting)
             {
                 API.CastSpell(SoulRot);
                 return;
@@ -591,25 +590,25 @@ namespace HyperElk.Core
             //actions+=/havoc,if=runeforge.odr_shawl_of_the_ymirjar.equipped
             //actions+=/variable,name=pool_soul_shards,value=active_enemies>1&cooldown.havoc.remains<=10|cooldown.summon_infernal.remains<=15&talent.dark_soul_instability.enabled&cooldown.dark_soul_instability.remains<=15|talent.dark_soul_instability.enabled&cooldown.dark_soul_instability.remains<=15&(cooldown.summon_infernal.remains>target.time_to_die|cooldown.summon_infernal.remains+cooldown.summon_infernal.duration>target.time_to_die)
             //actions+=/conflagrate,if=buff.backdraft.down&soul_shard>=1.5-0.3*talent.flashover.enabled&!variable.pool_soul_shards
-            if (API.CanCast(Conflagrate) && NotCasting && !LastCastConflagrate && !API.PlayerHasBuff(Backdraft) && API.PlayerCurrentSoulShards >= 1 && TalentFlashover)
+            if (API.CanCast(Conflagrate) && SaveQuake && NotCasting && !LastCastConflagrate && !API.PlayerHasBuff(Backdraft) && API.PlayerCurrentSoulShards >= 1 && TalentFlashover)
             {
                 API.CastSpell(Conflagrate);
                 return;
             }
             //actions+=/chaos_bolt,if=buff.dark_soul_instability.up
-            if (API.CanCast(ChaosBolt) && NotCasting && API.PlayerHasBuff(darkSoulInstability) && API.PlayerCurrentSoulShards >= 2)
+            if (API.CanCast(ChaosBolt) && SaveQuake && NotCasting && API.PlayerHasBuff(darkSoulInstability) && API.PlayerCurrentSoulShards >= 2)
             {
                 API.CastSpell(ChaosBolt);
                 return;
             }
             //actions+=/chaos_bolt,if=buff.backdraft.up&!variable.pool_soul_shards&!talent.eradication.enabled
-            if (API.CanCast(ChaosBolt) && NotCasting && API.PlayerHasBuff(Backdraft) && !TalentEradication && API.PlayerCurrentSoulShards >= 2)
+            if (API.CanCast(ChaosBolt) && SaveQuake && NotCasting && API.PlayerHasBuff(Backdraft) && !TalentEradication && API.PlayerCurrentSoulShards >= 2)
             {
                 API.CastSpell(ChaosBolt);
                 return;
             }
             //actions+=/chaos_bolt,if=!variable.pool_soul_shards&talent.eradication.enabled&(debuff.eradication.remains<cast_time|buff.backdraft.up)
-            if (API.CanCast(ChaosBolt) && NotCasting && API.PlayerCurrentSoulShards >= 2 && TalentEradication && API.TargetDebuffRemainingTime(Eradication) < API.PlayerCurrentCastTimeRemaining | API.PlayerHasBuff(Backdraft))
+            if (API.CanCast(ChaosBolt) && SaveQuake && NotCasting && API.PlayerCurrentSoulShards >= 2 && TalentEradication && API.TargetDebuffRemainingTime(Eradication) < API.PlayerCurrentCastTimeRemaining | API.PlayerHasBuff(Backdraft))
             {
                 API.CastSpell(ChaosBolt);
                 return;
@@ -621,19 +620,19 @@ namespace HyperElk.Core
                 return;
             }
             //actions+=/chaos_bolt,if=(soul_shard>=4.5-0.2*active_enemies)
-            if (API.CanCast(ChaosBolt) && NotCasting && API.PlayerCurrentSoulShards >= 4 && NotCasting)
+            if (API.CanCast(ChaosBolt) && SaveQuake && NotCasting && API.PlayerCurrentSoulShards >= 4 && NotCasting)
             {
                 API.CastSpell(ChaosBolt);
                 return;
             }
             //actions+=/conflagrate,if=charges>1
-            if (API.CanCast(Conflagrate) && NotCasting && !LastCastConflagrate && API.SpellCharges(Conflagrate) > 1 && NotCasting)
+            if (API.CanCast(Conflagrate) && SaveQuake && NotCasting && !LastCastConflagrate && API.SpellCharges(Conflagrate) > 1 && NotCasting)
             {
                 API.CastSpell(Conflagrate);
                 return;
             }
             //actions+=/incinerate
-            if (API.CanCast(Incinerate) && NotCasting)
+            if (API.CanCast(Incinerate) && SaveQuake && NotCasting)
             {
                 API.CastSpell(Incinerate);
                 return;
