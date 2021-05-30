@@ -407,7 +407,7 @@ namespace HyperElk.Core
                 if (IsCooldowns && !TalentSerenty)
                 {
                     //actions.cd_sef=invoke_xuen_the_white_tiger,if=!variable.hold_xuen|fight_remains<25
-                    if (API.CanCast(InvokeXuen) && UseInvokeXuen == "with Cooldowns" && (!HoldXuen || API.TargetTimeToDie < 2500))
+                    if (API.CanCast(InvokeXuen) && UseInvokeXuen == "with Cooldowns" && !HoldXuen)
                     {
                         API.CastSpell(InvokeXuen);
                         return;
@@ -450,7 +450,7 @@ namespace HyperElk.Core
                         return;
                     }
                     //actions.cd_sef+=/storm_earth_and_fire,if=cooldown.storm_earth_and_fire.charges=2|fight_remains<20|(raid_event.adds.remains>15|!covenant.kyrian&((raid_event.adds.in>cooldown.storm_earth_and_fire.full_recharge_time|!raid_event.adds.exists)&(cooldown.invoke_xuen_the_white_tiger.remains>cooldown.storm_earth_and_fire.full_recharge_time|variable.hold_xuen))&cooldown.fists_of_fury.remains<=9&chi>=2&cooldown.whirling_dragon_punch.remains<=12)
-                    if (API.CanCast(StormEarthandFire) && (API.SpellCharges(StormEarthandFire) == 2 || API.TargetTimeToDie < 2000 || PlayerCovenantSettings != "Kyrian" && (API.SpellCDDuration(InvokeXuen) > SEF_FullRechargeTime || HoldXuen) && API.SpellCDDuration(FistsofFury) <= 900 && API.PlayerCurrentChi >= 2 && API.SpellCDDuration(WhirlingDragonPunch) <= 1200))
+                    if (API.CanCast(StormEarthandFire) && (API.SpellCharges(StormEarthandFire) == 2 || PlayerCovenantSettings != "Kyrian" && (API.SpellCDDuration(InvokeXuen) > SEF_FullRechargeTime || HoldXuen) && API.SpellCDDuration(FistsofFury) <= 900 && API.PlayerCurrentChi >= 2 && API.SpellCDDuration(WhirlingDragonPunch) <= 1200))
                     {
                         API.CastSpell(StormEarthandFire);
                         FocusHelper = 0;
@@ -466,13 +466,13 @@ namespace HyperElk.Core
                     //actions.cd_sef+=/use_item,name=dreadfire_vessel,if=!variable.xuen_on_use_trinket|cooldown.invoke_xuen_the_white_tiger.remains>20|variable.hold_xuen
                     //actions.cd_sef+=/touch_of_karma,if=fight_remains>159|pet.xuen_the_white_tiger.active|variable.hold_xuen
                     //actions.cd_sef+=/blood_fury,if=cooldown.invoke_xuen_the_white_tiger.remains>30|variable.hold_xuen|fight_remains<20
-                    if (API.CanCast(RacialSpell1) && isRacial && PlayerRaceSettings == "Orc" && (API.SpellCDDuration(InvokeXuen) > 3000 || HoldXuen || API.TargetTimeToDie < 2000))
+                    if (API.CanCast(RacialSpell1) && isRacial && PlayerRaceSettings == "Orc" && (API.SpellCDDuration(InvokeXuen) > 3000 || HoldXuen))
                     {
                         API.CastSpell(RacialSpell1);
                         return;
                     }
                     //actions.cd_sef+=/berserking,if=cooldown.invoke_xuen_the_white_tiger.remains>30|variable.hold_xuen|fight_remains<15
-                    if (API.CanCast(RacialSpell1) && isRacial && PlayerRaceSettings == "Troll" && (API.SpellCDDuration(InvokeXuen) > 3000 || HoldXuen || API.TargetTimeToDie < 1500))
+                    if (API.CanCast(RacialSpell1) && isRacial && PlayerRaceSettings == "Troll" && (API.SpellCDDuration(InvokeXuen) > 3000 || HoldXuen))
                     {
                         API.CastSpell(RacialSpell1);
                         return;
@@ -490,7 +490,7 @@ namespace HyperElk.Core
                         return;
                     }
                     //actions.cd_sef+=/ancestral_call,if=cooldown.invoke_xuen_the_white_tiger.remains>30|variable.hold_xuen|fight_remains<20
-                    if (API.CanCast(RacialSpell1) && isRacial && PlayerRaceSettings == "Mag'har Orc" && (API.SpellCDDuration(InvokeXuen) > 3000 || HoldXuen || API.TargetTimeToDie < 2000))
+                    if (API.CanCast(RacialSpell1) && isRacial && PlayerRaceSettings == "Mag'har Orc" && (API.SpellCDDuration(InvokeXuen) > 3000 || HoldXuen))
                     {
                         API.CastSpell(RacialSpell1);
                         return;
@@ -507,7 +507,7 @@ namespace HyperElk.Core
                 {
                     //actions.cd_serenity=variable,name=serenity_burst,op=set,value=cooldown.serenity.remains<1|pet.xuen_the_white_tiger.active&cooldown.serenity.remains>30|fight_remains<20
                     //actions.cd_serenity+=/invoke_xuen_the_white_tiger,if=!variable.hold_xuen|fight_remains<25
-                    if (API.CanCast(InvokeXuen) && UseInvokeXuen == "with Cooldowns" && (!HoldXuen || API.TargetTimeToDie < 2500))
+                    if (API.CanCast(InvokeXuen) && UseInvokeXuen == "with Cooldowns" && !HoldXuen)
                     {
                         API.CastSpell(InvokeXuen);
                         return;
@@ -747,7 +747,7 @@ namespace HyperElk.Core
             if (IsCooldowns && !TalentSerenty && !CurrentCastFistsOfFury)
             {
                 //actions.cd_sef=invoke_xuen_the_white_tiger,if=!variable.hold_xuen|fight_remains<25
-                if (API.CanCast(InvokeXuen) && UseInvokeXuen == "with Cooldowns" && (!HoldXuen || API.TargetTimeToDie < 2500))
+                if (API.CanCast(InvokeXuen) && UseInvokeXuen == "with Cooldowns" && !HoldXuen)
                 {
                     API.CastSpell(InvokeXuen);
                     return;
@@ -790,14 +790,14 @@ namespace HyperElk.Core
                     return;
                 }
                 //actions.cd_sef+=/storm_earth_and_fire,if=cooldown.storm_earth_and_fire.charges=2|fight_remains<20|(raid_event.adds.remains>15|!covenant.kyrian&((raid_event.adds.in>cooldown.storm_earth_and_fire.full_recharge_time|!raid_event.adds.exists)&(cooldown.invoke_xuen_the_white_tiger.remains>cooldown.storm_earth_and_fire.full_recharge_time|variable.hold_xuen))&cooldown.fists_of_fury.remains<=9&chi>=2&cooldown.whirling_dragon_punch.remains<=12)
-                if (API.CanCast(StormEarthandFire) && (API.SpellCharges(StormEarthandFire) == 2 || API.TargetTimeToDie < 2000 || PlayerCovenantSettings != "Kyrian" && (API.SpellCDDuration(InvokeXuen) > SEF_FullRechargeTime || HoldXuen) && API.SpellCDDuration(FistsofFury) <= 900 && API.PlayerCurrentChi >= 2 && API.SpellCDDuration(WhirlingDragonPunch) <= 1200))
+                if (API.CanCast(StormEarthandFire) && (API.SpellCharges(StormEarthandFire) == 2 || PlayerCovenantSettings != "Kyrian" && (API.SpellCDDuration(InvokeXuen) > SEF_FullRechargeTime || HoldXuen) && API.SpellCDDuration(FistsofFury) <= 900 && API.PlayerCurrentChi >= 2 && API.SpellCDDuration(WhirlingDragonPunch) <= 1200))
                 {
                     API.CastSpell(StormEarthandFire);
                     FocusHelper = 0;
                     return;
                 }
                 //actions.cd_sef+=/storm_earth_and_fire,if=covenant.kyrian&(buff.weapons_of_order.up|(fight_remains<cooldown.weapons_of_order.remains|cooldown.weapons_of_order.remains>cooldown.storm_earth_and_fire.full_recharge_time)&cooldown.fists_of_fury.remains<=9&chi>=2&cooldown.whirling_dragon_punch.remains<=12)
-                if (API.CanCast(StormEarthandFire) && PlayerCovenantSettings == "Kyrian" && (API.PlayerHasBuff(StormEarthandFire) || API.TargetTimeToDie < API.SpellCDDuration(WeaponsofOrder) || API.SpellCDDuration(WeaponsofOrder) > SEF_FullRechargeTime) && API.SpellCDDuration(FistsofFury) <= 900 && API.PlayerCurrentChi >= 2 && API.SpellCDDuration(WhirlingDragonPunch) <= 1200 && TalentWhirlingDragonPunch)
+                if (API.CanCast(StormEarthandFire) && PlayerCovenantSettings == "Kyrian" && (API.PlayerHasBuff(StormEarthandFire) || API.SpellCDDuration(WeaponsofOrder) > SEF_FullRechargeTime) && API.SpellCDDuration(FistsofFury) <= 900 && API.PlayerCurrentChi >= 2 && API.SpellCDDuration(WhirlingDragonPunch) <= 1200 && TalentWhirlingDragonPunch)
                 {
                     API.CastSpell(StormEarthandFire);
                     FocusHelper = 0;
@@ -806,13 +806,13 @@ namespace HyperElk.Core
                 //actions.cd_sef+=/use_item,name=dreadfire_vessel,if=!variable.xuen_on_use_trinket|cooldown.invoke_xuen_the_white_tiger.remains>20|variable.hold_xuen
                 //actions.cd_sef+=/touch_of_karma,if=fight_remains>159|pet.xuen_the_white_tiger.active|variable.hold_xuen
                 //actions.cd_sef+=/blood_fury,if=cooldown.invoke_xuen_the_white_tiger.remains>30|variable.hold_xuen|fight_remains<20
-                if (API.CanCast(RacialSpell1) && isRacial && PlayerRaceSettings == "Orc" && (API.SpellCDDuration(InvokeXuen) > 3000 || HoldXuen || API.TargetTimeToDie < 2000))
+                if (API.CanCast(RacialSpell1) && isRacial && PlayerRaceSettings == "Orc" && (API.SpellCDDuration(InvokeXuen) > 3000 || HoldXuen))
                 {
                     API.CastSpell(RacialSpell1);
                     return;
                 }
                 //actions.cd_sef+=/berserking,if=cooldown.invoke_xuen_the_white_tiger.remains>30|variable.hold_xuen|fight_remains<15
-                if (API.CanCast(RacialSpell1) && isRacial && PlayerRaceSettings == "Troll" && (API.SpellCDDuration(InvokeXuen) > 3000 || HoldXuen || API.TargetTimeToDie < 1500))
+                if (API.CanCast(RacialSpell1) && isRacial && PlayerRaceSettings == "Troll" && (API.SpellCDDuration(InvokeXuen) > 3000 || HoldXuen))
                 {
                     API.CastSpell(RacialSpell1);
                     return;
@@ -830,7 +830,7 @@ namespace HyperElk.Core
                     return;
                 }
                 //actions.cd_sef+=/ancestral_call,if=cooldown.invoke_xuen_the_white_tiger.remains>30|variable.hold_xuen|fight_remains<20
-                if (API.CanCast(RacialSpell1) && isRacial && PlayerRaceSettings == "Mag'har Orc" && (API.SpellCDDuration(InvokeXuen) > 3000 || HoldXuen || API.TargetTimeToDie < 2000))
+                if (API.CanCast(RacialSpell1) && isRacial && PlayerRaceSettings == "Mag'har Orc" && (API.SpellCDDuration(InvokeXuen) > 3000 || HoldXuen))
                 {
                     API.CastSpell(RacialSpell1);
                     return;
@@ -847,7 +847,7 @@ namespace HyperElk.Core
             {
                 //actions.cd_serenity=variable,name=serenity_burst,op=set,value=cooldown.serenity.remains<1|pet.xuen_the_white_tiger.active&cooldown.serenity.remains>30|fight_remains<20
                 //actions.cd_serenity+=/invoke_xuen_the_white_tiger,if=!variable.hold_xuen|fight_remains<25
-                if (API.CanCast(InvokeXuen) && UseInvokeXuen == "with Cooldowns" && (!HoldXuen || API.TargetTimeToDie < 2500))
+                if (API.CanCast(InvokeXuen) && UseInvokeXuen == "with Cooldowns" && !HoldXuen)
                 {
                     API.CastSpell(InvokeXuen);
                     return;
