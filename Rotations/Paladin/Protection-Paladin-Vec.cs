@@ -83,8 +83,11 @@
         private bool FLashofLightInCombat => CombatRoutine.GetPropertyBool("FOLIC");
         private bool VengefulShockConduit => CombatRoutine.GetPropertyBool("VengefulShockConduit");
         private int WordOfGloryPlayerLifePercent => percentListProp[CombatRoutine.GetPropertyInt("WOGplayer")];
+        private int WordOfGloryFreeLifePercent => percentListProp[CombatRoutine.GetPropertyInt("WOGfree")];
         private int WordOfGloryFocusLifePercent => percentListProp[CombatRoutine.GetPropertyInt("WOGfocus")];
         private int WordOfGloryMouseoverLifePercent => percentListProp[CombatRoutine.GetPropertyInt("WOGmouseover")];
+        private bool WordOfGloryFreeOnPlayerOnly => CombatRoutine.GetPropertyBool("WOGfreeplayeronly");
+
         private bool AutoAuraSwitch => CombatRoutine.GetPropertyBool("AURASWITCH");
         private bool IsAvengingWrath => CombatRoutine.GetPropertyBool(AvengingWrath);
         private string UseCovenant => CDUsageWithAOE[CombatRoutine.GetPropertyInt("UseCovenant")];
@@ -193,7 +196,6 @@
 
             CombatRoutine.AddProp("AURASWITCH", "Auto Aura Switch", true, "Auto Switch Aura between Crusader Aura|Devotion Aura", "Generic");
             CombatRoutine.AddProp(AvengingWrath, "Use Avenging Wrath", true, "Use Avenging Wrath with cooldowns", "Generic");
-            CombatRoutine.AddProp("AOEUnitNumner", "AOE Unit Numner", 2, "How many units around to use AOE rotation", "Generic");
             CombatRoutine.AddProp("UseCovenant", "Use " + "Covenant Ability", CDUsageWithAOE, "Use " + "Covenant" + " always, with Cooldowns", "Cooldowns", 0);
             CombatRoutine.AddProp("Trinket1", "Use " + "Use Trinket 1", UseListwithHP, "Use " + "Trinket 1" + " always, with Cooldowns", "Trinkets", 0);
             CombatRoutine.AddProp("Trinket2", "Use " + "Trinket 2", UseListwithHP, "Use " + "Trinket 2" + " always, with Cooldowns", "Trinkets", 0);
@@ -204,7 +206,9 @@
             CombatRoutine.AddProp(DivineShield, DivineShield + " Life Percent", percentListProp, "Life percent at which" + DivineShield + "is used, set to 0 to disable", "Defense", 3);
             CombatRoutine.AddProp(GuardianofAncientKings, GuardianofAncientKings + " Life Percent", percentListProp, "Life percent at which" + GuardianofAncientKings + "is used, set to 0 to disable", "Defense", 4);
             CombatRoutine.AddProp("WOGplayer", WordOfGlory + " Player", percentListProp, "Life percent at which Word of Glory is used", "Defense - Word of Glory", 5);
+            CombatRoutine.AddProp("WOGfree", WordOfGlory + " Free", percentListProp, "Life percent at which Free Word of Glory is used", "Defense - Word of Glory", 5);
             CombatRoutine.AddProp("WOGfocus", WordOfGlory + " Focus", percentListProp, "Life percent at which Word of Glory is used", "Defense - Word of Glory", 5);
+            CombatRoutine.AddProp("WOGfreeplayeronly", WordOfGlory + " Free" + " on Player only", true, "Use" + WordOfGlory + "on Player only", "Defense - Word of Glory");
             CombatRoutine.AddProp("WOGmouseover", WordOfGlory + " Mouseover", percentListProp, "Life percent at which Word of Glory is used", "Defense - Word of Glory", 5);
             CombatRoutine.AddProp(BlessingofProtection + "player", BlessingofProtection + " Player" + " Life Percent", percentListProp, "Life percent at which" + BlessingofProtection + "is used, set to 0 to disable", "Defense - Blessing of Protection", 2);
             CombatRoutine.AddProp(BlessingofProtection + "focus", BlessingofProtection + " Focus" + " Life Percent", percentListProp, "Life percent at which" + BlessingofProtection + "is used, set to 0 to disable", "Defense - Blessing of Protection", 2);
@@ -297,7 +301,7 @@
                 return;
             }
 
-            if (API.PlayerHealthPercent <= WordOfGloryPlayerLifePercent && (API.PlayerCurrentHolyPower >= 3 || API.PlayerHasBuff(ShiningLight)) && !API.SpellISOnCooldown(WordOfGlory) && PlayerLevel >= 7)
+            if ((API.PlayerHealthPercent <= WordOfGloryPlayerLifePercent && API.PlayerCurrentHolyPower >= 3 || API.PlayerHasBuff(ShiningLight) && API.PlayerHealthPercent <= WordOfGloryFreeLifePercent) && !API.SpellISOnCooldown(WordOfGlory) && PlayerLevel >= 7)
             {
                 API.CastSpell(WordOfGlory);
                 return;
@@ -307,14 +311,14 @@
                 API.CastSpell(FlashofLight);
                 return;
             }
-            if (HealFocus)
+            if (HealFocus && API.FocusHealthPercent > 0)
             {
                 if (!API.MacroIsIgnored(LayOnHands + " Focus") && API.FocusHealthPercent <= LayOnHandsFocusLifePercent && API.FocusRange <= 40 && API.CanCast(LayOnHands) && PlayerLevel >= 9 && !API.FocusHasDebuff(Forbearance, false, false))
                 {
                     API.CastSpell(LayOnHands + " Focus");
                     return;
                 }
-                if (!API.MacroIsIgnored(WordOfGlory + " Focus") && API.SpellIsCanbeCast(WordOfGlory) && API.FocusRange <= 40 && API.FocusHealthPercent <= WordOfGloryFocusLifePercent && API.CanCast(WordOfGlory) && PlayerLevel >= 7)
+                if (!API.MacroIsIgnored(WordOfGlory + " Focus") && API.SpellIsCanbeCast(WordOfGlory) && API.FocusRange <= 40 && (API.FocusHealthPercent <= WordOfGloryFocusLifePercent || API.PlayerHasBuff(ShiningLight) && API.PlayerHealthPercent <= WordOfGloryFreeLifePercent && !WordOfGloryFreeOnPlayerOnly) && API.CanCast(WordOfGlory) && PlayerLevel >= 7)
                 {
                     API.CastSpell(WordOfGlory + " Focus");
                     return;
@@ -330,7 +334,7 @@
                     return;
                 }
             }
-            if (IsMouseover)
+            if (IsMouseover && API.MouseoverHealthPercent > 0)
             {
                 if (!API.MacroIsIgnored(LayOnHands + " MO") && API.MouseoverHealthPercent <= LayOnHandsMouseoverLifePercent && API.MouseoverRange <= 40 && API.CanCast(LayOnHands) && PlayerLevel >= 9 && !API.MouseoverHasDebuff(Forbearance, false, false))
                 {
@@ -342,7 +346,7 @@
                     API.CastSpell(BlessingofProtection + " MO");
                     return;
                 }
-                if (!API.MacroIsIgnored(WordOfGlory + " MO") && API.SpellIsCanbeCast(WordOfGlory) && API.MouseoverRange <= 40 && API.MouseoverHealthPercent <= WordOfGloryMouseoverLifePercent && API.CanCast(WordOfGlory) && PlayerLevel >= 7)
+                if (!API.MacroIsIgnored(WordOfGlory + " MO") && API.SpellIsCanbeCast(WordOfGlory) && API.MouseoverRange <= 40 && (API.MouseoverHealthPercent <= WordOfGloryMouseoverLifePercent || API.PlayerHasBuff(ShiningLight) && API.PlayerHealthPercent <= WordOfGloryFreeLifePercent && !WordOfGloryFreeOnPlayerOnly) && API.CanCast(WordOfGlory) && PlayerLevel >= 7)
                 {
                     API.CastSpell(WordOfGlory + " MO");
                     return;
