@@ -36,6 +36,7 @@
 // v4.2 sooth list
 // v4.3 small change
 // v4.4 raging fix
+// v4.5 small hotfix and potions added
 
 using System.Diagnostics;
 
@@ -112,6 +113,7 @@ namespace HyperElk.Core
         private string Heroism = "Heroism";
         private string DrumsofDeathlyFerocity = "Drums of Deathly Ferocity";
         private string Soothe = "Soothe";
+        private string PotionofSpectralAgility = "Potion of Spectral Agility";
 
         //Talents
         bool TalentLunarInspiration => API.PlayerIsTalentSelected(1, 3);
@@ -196,6 +198,7 @@ namespace HyperElk.Core
         private string UseBerserk => CDUsageWithAOE[CombatRoutine.GetPropertyInt(Berserk)];
         public bool isMouseoverInCombat => CombatRoutine.GetPropertyBool("MouseoverInCombat");
         private bool ProwlOOC => CombatRoutine.GetPropertyBool("ProwlOOC");
+        private bool UsePotion => CombatRoutine.GetPropertyBool("UsePotion");
         private bool AutoTravelForm => CombatRoutine.GetPropertyBool("AutoTravelForm");
         private bool RootsTorghast => CombatRoutine.GetPropertyBool("RootsTorghast");
         private bool DontAttackRoots => CombatRoutine.GetPropertyBool("DontAttackRoots");
@@ -217,7 +220,7 @@ namespace HyperElk.Core
         public override void Initialize()
         {
             CombatRoutine.Name = "Feral Druid by smartie";
-            API.WriteLog("Welcome to smartie`s Feral Druid v4.4");
+            API.WriteLog("Welcome to smartie`s Feral Druid v4.5");
             API.WriteLog("Create the following mouseover macros and assigned to the bind:");
             API.WriteLog("RakeMO - /cast [@mouseover] Rake");
             API.WriteLog("ThrashMO - /cast [@mouseover] Thrash");
@@ -279,10 +282,9 @@ namespace HyperElk.Core
             CombatRoutine.AddMacro("Trinket1", "F9");
             CombatRoutine.AddMacro("Trinket2", "F10");
 
-
             //Buffs
-            CombatRoutine.AddBuff(Prowl, 5215);
             CombatRoutine.AddBuff(CatForm, 768);
+            CombatRoutine.AddBuff(Prowl, 5215);
             CombatRoutine.AddBuff(BearForm, 5487);
             CombatRoutine.AddBuff(TigersFury, 5217);
             CombatRoutine.AddBuff(SavageRoar, 52610);
@@ -311,6 +313,20 @@ namespace HyperElk.Core
             CombatRoutine.AddBuff(Heroism, 32182);
             CombatRoutine.AddBuff(DrumsofDeathlyFerocity, 172233);
 
+
+            //Debuff
+            CombatRoutine.AddDebuff(Rip, 1079);
+            CombatRoutine.AddDebuff(Thrash, 106830);
+            CombatRoutine.AddDebuff(Thrashbear, 192090);
+            CombatRoutine.AddDebuff(Rake, 155722);
+            CombatRoutine.AddDebuff(Moonfire, 155625);
+            CombatRoutine.AddDebuff(MoonfireOwl, 164812);
+            CombatRoutine.AddDebuff(AdaptiveSwarm, 325727);
+            CombatRoutine.AddDebuff(Sunfire, 164815);
+            CombatRoutine.AddDebuff(EntanglingRoots, 339);
+            CombatRoutine.AddDebuff(MassEntanglement, 102359);
+            CombatRoutine.AddDebuff("Frozen Binds", 320788);
+
             //Soothe
             CombatRoutine.AddBuff("Raging", 228318);
             CombatRoutine.AddBuff("Unholy Frenzy", 320012);
@@ -329,19 +345,6 @@ namespace HyperElk.Core
             CombatRoutine.AddBuff("Raging Tantrum", 333241);
             CombatRoutine.AddBuff("Seething Rage", 320703);
 
-            //Debuff
-            CombatRoutine.AddDebuff(Rip, 1079);
-            CombatRoutine.AddDebuff(Thrash, 106830);
-            CombatRoutine.AddDebuff(Thrashbear, 192090);
-            CombatRoutine.AddDebuff(Rake, 155722);
-            CombatRoutine.AddDebuff(Moonfire, 155625);
-            CombatRoutine.AddDebuff(MoonfireOwl, 164812);
-            CombatRoutine.AddDebuff(AdaptiveSwarm, 325727);
-            CombatRoutine.AddDebuff(Sunfire, 164815);
-            CombatRoutine.AddDebuff(EntanglingRoots, 339);
-            CombatRoutine.AddDebuff(MassEntanglement, 102359);
-            CombatRoutine.AddDebuff("Frozen Binds", 320788);
-
             //Toggle
             CombatRoutine.AddToggle("Mouseover");
             CombatRoutine.AddToggle("Owlweave");
@@ -350,6 +353,7 @@ namespace HyperElk.Core
             //Item
             CombatRoutine.AddItem(PhialofSerenity, 177278);
             CombatRoutine.AddItem(SpiritualHealingPotion, 171267);
+            CombatRoutine.AddItem(PotionofSpectralAgility, 171270);
 
             //Conduit
             CombatRoutine.AddConduit(TasteforBlood, 340682);
@@ -365,6 +369,7 @@ namespace HyperElk.Core
             CombatRoutine.AddProp(Incarnation, "Use " + Incarnation, CDUsageWithAOE, "Use " + Incarnation + " always, with Cooldowns", "Cooldowns", 0);
             CombatRoutine.AddProp(Berserk, "Use " + Berserk, CDUsageWithAOE, "Use " + Berserk + " always, with Cooldowns", "Cooldowns", 0);
             CombatRoutine.AddProp("ProwlOOC", "ProwlOOC", true, "Use Prowl out of Combat", "Generic");
+            CombatRoutine.AddProp("UsePotion", "Use DPS Potion", false, " Will use DPS POtion", "Cooldowns");
             CombatRoutine.AddProp("AutoTravelForm", "AutoTravelForm", false, "Will auto switch to Travel Form Out of Fight and outside", "Generic");
             CombatRoutine.AddProp("RootsTorghast", "Use Roots in Torghast", false, "Use Roots in Torghast", "Roots");
             CombatRoutine.AddProp("DontAttackRoots", "Dont Attack roots", false, "Rota wont attack Targets that are rooted", "Roots");
@@ -386,7 +391,7 @@ namespace HyperElk.Core
             //API.WriteLog("Conduit1: " + API.PlayerIsConduitSelected(TasteforBlood));
             //API.WriteLog("Channeling? : " + API.PlayerIsChanneling);
             //API.WriteLog("save: " + SaveEnergy);
-            //API.WriteLog("Lastspell: " + API.LastSpellCastInGame);
+            //API.WriteLog("Are we Kitty ?: " + API.PlayerHasBuff(CatForm));
             if (!BloodtalonsEnergie && !PlayerHasBuff(Bloodtalons) && TalentBloodtalons && !bloodtimer.IsRunning && API.PlayerIsInCombat)
             {
                 bloodtimer.Restart();
@@ -592,7 +597,7 @@ namespace HyperElk.Core
                     return;
                 }
             }
-            if (!API.PlayerHasBuff(MoonkinForm) && TalentBalanceAffinity && !PlayerHasBuff(Prowl) && !API.PlayerIsMoving && !isMelee && isInRange && IsAutoForm && AutoMoonkin)
+            if (API.CanCast(MoonkinForm) && !API.PlayerHasBuff(MoonkinForm) && TalentBalanceAffinity && !PlayerHasBuff(Prowl) && !API.PlayerIsMoving && !isMelee && isInRange && IsAutoForm && AutoMoonkin)
             {
                 API.CastSpell(MoonkinForm);
                 return;
@@ -679,12 +684,12 @@ namespace HyperElk.Core
                     return;
                 }
             }
-            if ((!API.PlayerHasBuff(CatForm) && PlayerLevel >= 5) && (API.TargetDebuffRemainingTime(Sunfire) > 200 && (API.TargetDebuffRemainingTime(MoonfireOwl) > 200 && API.PlayerUnitInMeleeRangeCount < 2 && (IsLegendary == "Draught of Deep Focus" || IsLegendary == "Cat-eye Curio") || API.PlayerUnitInMeleeRangeCount >= 2 || !(IsLegendary == "Draught of Deep Focus" || IsLegendary == "Cat-eye Curio")) && IsOwlweave && TalentBalanceAffinity || !IsOwlweave || !TalentBalanceAffinity) && isMelee && !API.PlayerHasBuff(BearForm) && !API.PlayerHasBuff(Soulshape) && IsAutoForm)
+            if (API.CanCast(CatForm) && (!API.PlayerHasBuff(CatForm) && PlayerLevel >= 5) && (API.TargetDebuffRemainingTime(Sunfire) > 200 && (API.TargetDebuffRemainingTime(MoonfireOwl) > 200 && API.PlayerUnitInMeleeRangeCount < 2 && (IsLegendary == "Draught of Deep Focus" || IsLegendary == "Cat-eye Curio") || API.PlayerUnitInMeleeRangeCount >= 2 || !(IsLegendary == "Draught of Deep Focus" || IsLegendary == "Cat-eye Curio")) && IsOwlweave && TalentBalanceAffinity || !IsOwlweave || !TalentBalanceAffinity) && isMelee && !API.PlayerHasBuff(BearForm) && !API.PlayerHasBuff(Soulshape) && IsAutoForm)
             {
                 API.CastSpell(CatForm);
                 return;
             }
-            if (!API.PlayerHasBuff(CatForm) && PlayerLevel >= 5 && !API.PlayerHasBuff(BearForm) && !API.PlayerHasBuff(MoonkinForm) && !API.PlayerHasBuff(Soulshape) && IsAutoForm)
+            if (API.CanCast(CatForm) && !API.PlayerHasBuff(CatForm) && PlayerLevel >= 5 && !API.PlayerHasBuff(BearForm) && !API.PlayerHasBuff(MoonkinForm) && !API.PlayerHasBuff(Soulshape) && IsAutoForm)
             {
                 API.CastSpell(CatForm);
                 return;
@@ -720,6 +725,12 @@ namespace HyperElk.Core
             if (PlayerHasBuff(CatForm) && !(PlayerHasBuff(Shadowmeld) || PlayerHasBuff(Prowl)))
             {
                 //Cooldowns
+                //Potion
+                if (API.PlayerItemCanUse(PotionofSpectralAgility) && !API.MacroIsIgnored(PotionofSpectralAgility) && API.PlayerItemRemainingCD(PotionofSpectralAgility) == 0 && IsCooldowns && IncaBerserk)
+                {
+                    API.CastSpell(PotionofSpectralAgility);
+                    return;
+                }
                 //actions.cooldown=feral_frenzy,if=combo_points<3
                 if (isMelee && TalentFeralFrenzy && API.CanCast(FeralFrenzy) && API.PlayerComboPoints < 3 && IsFeralFrenzy)
                 {
