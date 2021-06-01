@@ -115,6 +115,7 @@ namespace HyperElk.Core
             CombatRoutine.AddSpell(EmpowerRuneWeapon, 47568, "D1");
             CombatRoutine.AddSpell(MindFreeze, 47528, "D1");
 
+
             CombatRoutine.AddSpell(SwarmingMist, 311648, "NumPad2");
             CombatRoutine.AddSpell(DeathsDue,315442);
             CombatRoutine.AddSpell(AbominationLimb, 315443);
@@ -134,7 +135,7 @@ namespace HyperElk.Core
 
             CombatRoutine.AddBuff(ColdHeart, 281208);
             CombatRoutine.AddBuff(DarkSuccor, 178819);
-            CombatRoutine.AddBuff(Rime, 59057);
+            CombatRoutine.AddBuff(Rime, 59052);
             CombatRoutine.AddBuff(KillingMachine, 51128);
             CombatRoutine.AddBuff(PillarofFrost, 51271);
             CombatRoutine.AddBuff(BreathofSindragosa, 152279);
