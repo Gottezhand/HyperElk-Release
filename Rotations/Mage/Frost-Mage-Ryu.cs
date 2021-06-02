@@ -279,7 +279,9 @@ namespace HyperElk.Core
 
         public override void Pulse()
         {
-            if (RemainingIceLances == 0 && !API.TargetHasDebuff(WC))
+ //           API.WriteLog("Spell GCD Timer : " + API.SpellGCDDuration);
+   //         API.WriteLog("Total Spell GCD Duration : " + API.SpellGCDTotalDuration);
+            if (!API.TargetHasDebuff(WC))
             {
                 RemainingIceLances = 2;
             }
@@ -340,17 +342,17 @@ namespace HyperElk.Core
                     API.CastSpell("Trinket2");
                     return;
                 }
-                if (isInterrupt && API.CanCast(Counterspell) && Level >= 7 && (API.PlayerIsCasting(false) || AlwaysInt) && !ChannelingShift && NotChanneling && !ChannelingRoF)
+                if (isInterrupt && API.CanCast(Counterspell) && Level >= 7 && (API.PlayerIsCasting(false) || AlwaysInt) && !ChannelingShift && NotChanneling && !ChannelingRoF && !API.TargetHasDebuff(WC))
                 {
                     API.CastSpell(Counterspell);
                     return;
                 }
-                if (API.CanCast(Counterspell) && CombatRoutine.GetPropertyBool("KICK") && API.FocusCanInterrupted && API.FocusIsCasting() && (API.FocusIsChanneling ? API.FocusElapsedCastTimePercent >= interruptDelay : API.FocusCurrentCastTimeRemaining <= interruptDelay) && (API.PlayerIsCasting(false) || AlwaysInt) && !ChannelingShift && NotChanneling && !ChannelingRoF) 
+                if (API.CanCast(Counterspell) && CombatRoutine.GetPropertyBool("KICK") && API.FocusCanInterrupted && API.FocusIsCasting() && (API.FocusIsChanneling ? API.FocusElapsedCastTimePercent >= interruptDelay : API.FocusCurrentCastTimeRemaining <= interruptDelay) && (API.PlayerIsCasting(false) || AlwaysInt) && !ChannelingShift && NotChanneling && !ChannelingRoF && !API.TargetHasDebuff(WC)) 
                 {
                     API.CastSpell(Counterspell + "Focus");
                     return;
                 }
-                if (API.CanCast(Spellsteal))
+                if (API.CanCast(Spellsteal) && !API.TargetHasDebuff(WC))
                 {
                     for (int i = 0; i < SpellSpealBuffList.Length; i++)
                     {
@@ -361,7 +363,7 @@ namespace HyperElk.Core
                         }
                     }
                 }
-                if (API.CanCast(Spellsteal) && !API.MacroIsIgnored(Spellsteal + "MO") && IsMouseover)
+                if (API.CanCast(Spellsteal) && !API.MacroIsIgnored(Spellsteal + "MO") && IsMouseover && !API.TargetHasDebuff(WC))
                 {
                     for (int i = 0; i < SpellSpealBuffList.Length; i++)
                     {
@@ -372,7 +374,7 @@ namespace HyperElk.Core
                         }
                     }
                 }
-                if (API.CanCast(RemoveCurse) && !API.PlayerCanAttackTarget)
+                if (API.CanCast(RemoveCurse) && !API.PlayerCanAttackTarget && !API.TargetHasDebuff(WC))
                 {
                     for (int i = 0; i < CurseList.Length; i++)
                     {
@@ -383,7 +385,7 @@ namespace HyperElk.Core
                         }
                     }
                 }
-                if (API.CanCast(RemoveCurse) && !API.MacroIsIgnored(RemoveCurse + "MO") && !API.PlayerCanAttackMouseover && IsMouseover)
+                if (API.CanCast(RemoveCurse) && !API.MacroIsIgnored(RemoveCurse + "MO") && !API.PlayerCanAttackMouseover && IsMouseover && !API.TargetHasDebuff(WC))
                 {
                     for (int i = 0; i < CurseList.Length; i++)
                     {
@@ -394,12 +396,12 @@ namespace HyperElk.Core
                         }
                     }
                 }
-                if (API.CanCast(IB) && API.PlayerHealthPercent <= IBPercentProc && API.PlayerHealthPercent != 0 && Level >= 22)
+                if (API.CanCast(IB) && API.PlayerHealthPercent <= IBPercentProc && API.PlayerHealthPercent != 0 && Level >= 22 && !API.TargetHasDebuff(WC))
                 {
                     API.CastSpell(IB);
                     return;
                 }
-                if (API.CanCast(MI) && API.PlayerHealthPercent <= MIPercentProc && API.PlayerHealthPercent != 0 && Level >= 44)
+                if (API.CanCast(MI) && API.PlayerHealthPercent <= MIPercentProc && API.PlayerHealthPercent != 0 && Level >= 44 && !API.TargetHasDebuff(WC))
                 {
                     API.CastSpell(MI);
                     return;
@@ -409,7 +411,7 @@ namespace HyperElk.Core
                     API.CastSpell(Fleshcraft);
                     return;
                 }
-                if (API.CanCast(IceBarrier) && Level >= 21 && !PlayerHasBuff(IceBarrier) && API.PlayerHealthPercent <= IceBarrierPercentProc && API.PlayerHealthPercent != 0)
+                if (API.CanCast(IceBarrier) && Level >= 21 && !PlayerHasBuff(IceBarrier) && API.PlayerHealthPercent <= IceBarrierPercentProc && API.PlayerHealthPercent != 0 && !API.TargetHasDebuff(WC))
                 {
                     API.CastSpell(IceBarrier);
                     return;
@@ -503,7 +505,7 @@ namespace HyperElk.Core
                     API.WriteLog("Remaining Ice Lances ? " + RemainingIceLances);
                     return;
                 }
-                if (API.CanCast(IL) && Level >= 10 && API.TargetRange <= 40 && RemainingIceLances > 0 && API.TargetHasDebuff(WC) && !API.SpellISOnCooldown(IL) && API.LastSpellCastInGame == IL)
+                if (API.CanCast(IL) && Level >= 10 && API.TargetRange <= 40 && RemainingIceLances > 0 && API.TargetHasDebuff(WC) && !API.SpellISOnCooldown(IL) && !API.PlayerIsCasting() && API.SpellGCDDuration == 0 && IceWatch2.ElapsedMilliseconds >= API.SpellGCDTotalDuration * 11)
                 {
                     API.CastSpell(IL);
                     RemainingIceLances--;
@@ -518,9 +520,10 @@ namespace HyperElk.Core
                    API.WriteLog("Frostbolt Hard Cast To Start Shatter Combo");
                    return;
                 }
-                if (API.CanCast(Flurry) && PlayerHasBuff(BrainFreeze) && Level >= 19 && API.TargetRange <= 40 && API.LastSpellCastInGame != Flurry && (!PlayerHasBuff(FoF) || PlayerHasBuff(FoF)) && !API.TargetHasDebuff(WC))
+                if (API.CanCast(Flurry) && PlayerHasBuff(BrainFreeze) && Level >= 19 && API.TargetRange <= 40 && API.LastSpellCastInGame != Flurry && (!PlayerHasBuff(FoF) || PlayerHasBuff(FoF)) && !API.TargetHasDebuff(WC) && RemainingIceLances >= 2)
                 {
                     API.CastSpell(Flurry);
+                    API.WriteLog("Flurry to start Shatter Combo");
                     return;
                 }
                 if (API.CanCast(Flurry) && PlayerHasBuff(BrainFreeze) && (API.PlayerLastSpell == Trinket1 || API.PlayerLastSpell == Trinket2) && Level >= 19 && API.TargetRange <= 40 && API.LastSpellCastInGame != Flurry && (CastEB || API.PlayerLastSpell == EB || API.LastSpellCastInGame == Frostbolt && API.SpellISOnCooldown(EB)) && Ebonbolt && (!PlayerHasBuff(FoF) || PlayerHasBuff(FoF)) && !API.TargetHasDebuff(WC))
@@ -547,12 +550,12 @@ namespace HyperElk.Core
                     API.CastSpell(IF);
                     return;
                 }
-                if (API.CanCast(Deathborne) && InRange && PlayerCovenantSettings == "Necrolord" && (UseCovenant == "With Cooldowns" && IsCooldowns || UseCovenant == "On Cooldown" || UseCovenant == "on AOE" && IsAOE) && SaveQuake)
+                if (API.CanCast(Deathborne) && InRange && PlayerCovenantSettings == "Necrolord" && (UseCovenant == "With Cooldowns" && IsCooldowns || UseCovenant == "On Cooldown" || UseCovenant == "on AOE" && IsAOE) && SaveQuake && !API.TargetHasDebuff(WC))
                 {
                     API.CastSpell(Deathborne);
                     return;
                 }
-                if (API.CanCast(IV) && Level >= 29 && !API.PlayerIsMoving && API.TargetRange <= 40 && (IsCooldowns && UseIV == "With Cooldowns" || UseIV == "On Cooldown"))
+                if (API.CanCast(IV) && Level >= 29 && !API.PlayerIsMoving && API.TargetRange <= 40 && (IsCooldowns && UseIV == "With Cooldowns" || UseIV == "On Cooldown") && !API.TargetHasDebuff(WC))
                 {
                     API.CastSpell(IV);
                     return;
@@ -563,43 +566,43 @@ namespace HyperElk.Core
                     return;
                 }
                 // actions.st+=/blizzard,if=buff.freezing_rain.up|active_enemies>=2 // actions.aoe+=/blizzard
-                if (API.CanCast(Blizzard) && Level >= 14 && API.TargetRange <= 40 && !API.PlayerIsMoving && ((API.TargetUnitInRangeCount >= 2 || IsForceAOE) && (IsAOE || IsForceAOE) || FreezingRain && PlayerHasBuff(FR)) && (!QuakingHelper || QuakingBlizzard && QuakingHelper))
+                if (API.CanCast(Blizzard) && Level >= 14 && API.TargetRange <= 40 && !API.PlayerIsMoving && ((API.TargetUnitInRangeCount >= 2 || IsForceAOE) && (IsAOE || IsForceAOE) || FreezingRain && PlayerHasBuff(FR)) && (!QuakingHelper || QuakingBlizzard && QuakingHelper) && !API.TargetHasDebuff(WC))
                 {
                     API.CastSpell(Blizzard);
                     return;
                 }
-                if (API.CanCast(Blizzard) && Level >= 14 && API.TargetRange <= 40 && PlayerHasBuff(IF) && API.PlayerIsMoving && (API.TargetUnitInRangeCount >= AOEUnitNumber || IsForceAOE) && (IsAOE || IsForceAOE) && (!QuakingHelper || QuakingBlizzard && QuakingHelper))
+                if (API.CanCast(Blizzard) && Level >= 14 && API.TargetRange <= 40 && PlayerHasBuff(IF) && API.PlayerIsMoving && (API.TargetUnitInRangeCount >= AOEUnitNumber || IsForceAOE) && (IsAOE || IsForceAOE) && (!QuakingHelper || QuakingBlizzard && QuakingHelper) && !API.TargetHasDebuff(WC))
                 {
                     API.CastSpell(Blizzard);
                     return;
                 }
                 //actions.aoe+=/comet_storm // actions.st+=/comet_storm
-                if (Cometstorm && API.CanCast(CS) && API.TargetRange <= 40)
+                if (Cometstorm && API.CanCast(CS) && API.TargetRange <= 40 && !API.TargetHasDebuff(WC))
                 {
                     API.CastSpell(CS);
                     return;
                 }
                 //actions.st +=/ ice_nova
-                if (IceNova && API.CanCast(IN) && API.TargetRange <= 40 && (API.PlayerIsMoving || !API.PlayerIsMoving))
+                if (IceNova && API.CanCast(IN) && API.TargetRange <= 40 && (API.PlayerIsMoving || !API.PlayerIsMoving) && !API.TargetHasDebuff(WC))
                 {
                     API.CastSpell(IN);
                     return;
                 }
                 //actions.st+=/radiant_spark,if=buff.freezing_winds.up&active_enemies=1
                 //actions.st+=/ebonbolt
-                if (Ebonbolt && API.CanCast(EB) && API.TargetRange <= 40 && !PlayerHasBuff(BrainFreeze) && (!API.PlayerIsMoving || PlayerHasBuff(IF) && API.PlayerIsMoving) && (!QuakingHelper || QuakingEB && QuakingHelper))
+                if (Ebonbolt && API.CanCast(EB) && API.TargetRange <= 40 && !PlayerHasBuff(BrainFreeze) && (!API.PlayerIsMoving || PlayerHasBuff(IF) && API.PlayerIsMoving) && (!QuakingHelper || QuakingEB && QuakingHelper) && !API.TargetHasDebuff(WC))
                 {
                     API.CastSpell(EB);
                     return;
                 }
                 //actions.st+=/radiant_spark,if=(!runeforge.freezing_winds|active_enemies>=2)&buff.brain_freeze.react
-                if (API.CanCast(RadiantSpark) && PlayerHasBuff(BrainFreeze) && InRange && PlayerCovenantSettings == "Kyrian" && (UseCovenant == "With Cooldowns" && IsCooldowns || UseCovenant == "On Cooldown" || UseCovenant == "on AOE" && IsAOE) && SaveQuake)
+                if (API.CanCast(RadiantSpark) && PlayerHasBuff(BrainFreeze) && InRange && PlayerCovenantSettings == "Kyrian" && (UseCovenant == "With Cooldowns" && IsCooldowns || UseCovenant == "On Cooldown" || UseCovenant == "on AOE" && IsAOE) && SaveQuake && !API.TargetHasDebuff(WC))
                 {
                     API.CastSpell(RadiantSpark);
                     return;
                 }
                 //actions.st+=/mirrors_of_torment
-                if (API.CanCast(MirrorsofTorment) && InRange && PlayerCovenantSettings == "Venthyr" && (UseCovenant == "With Cooldowns" && IsCooldowns || UseCovenant == "On Cooldown" || UseCovenant == "on AOE" && IsAOE) && (!QuakingHelper || QuakingMirrors && QuakingHelper))
+                if (API.CanCast(MirrorsofTorment) && InRange && PlayerCovenantSettings == "Venthyr" && (UseCovenant == "With Cooldowns" && IsCooldowns || UseCovenant == "On Cooldown" || UseCovenant == "on AOE" && IsAOE) && (!QuakingHelper || QuakingMirrors && QuakingHelper) && !API.TargetHasDebuff(WC))
                 {
                     API.CastSpell(MirrorsofTorment);
                     return;
@@ -616,13 +619,13 @@ namespace HyperElk.Core
                     return;
                 }
                 //actions.st+=/arcane_explosion,if=runeforge.disciplinary_command&cooldown.buff_disciplinary_command.ready&buff.disciplinary_command_arcane.down
-                if (API.CanCast(AE) && API.TargetRange <= 3 && IsAOE && API.PlayerUnitInMeleeRangeCount >= 3 && API.PlayerMana >= 30 && (!API.PlayerIsMoving || API.PlayerIsMoving))
+                if (API.CanCast(AE) && API.TargetRange <= 3 && IsAOE && API.PlayerUnitInMeleeRangeCount >= 3 && API.PlayerMana >= 30 && (!API.PlayerIsMoving || API.PlayerIsMoving) && !API.TargetHasDebuff(WC))
                 {
                     API.CastSpell(AE);
                     return;
                 }
                 //actions.st+=/frostbolt
-                if (API.CanCast(CoC) && Level >= 18 && API.TargetRange <= 10 && (API.TargetUnitInRangeCount >= 3 && IsAOE || IsForceAOE))
+                if (API.CanCast(CoC) && Level >= 18 && API.TargetRange <= 10 && (API.TargetUnitInRangeCount >= 3 && IsAOE || IsForceAOE) && !API.TargetHasDebuff(WC))
                 {
                     API.CastSpell(CoC);
                     return;
@@ -638,6 +641,13 @@ namespace HyperElk.Core
                     API.WriteLog("Ice Lance While Moving");
                     return;
                 }
+         //       if (API.CanCast(IL) && API.TargetDebuffStacks(WC) == 1 && InRange && RemainingIceLances == 0 && API.LastSpellCastInGame == IL)
+           //     {
+             //       API.CastSpell(IL);
+               //     RemainingIceLances--;
+                 //   API.WriteLog("Back Up IL for Elk Double Press");
+                   // return;
+               // }
             }
 
             

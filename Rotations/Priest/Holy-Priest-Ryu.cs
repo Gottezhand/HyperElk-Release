@@ -507,8 +507,10 @@ namespace HyperElk.Core
 
         public override void Pulse()
         {
-            var UnitLowest = API.UnitLowest();
-            var LowestTankUnit = API.UnitLowest(out string lowestTank);
+            var UnitLowestParty = API.UnitLowestParty();
+            var UnitLowestRaid = API.UnitLowestRaid();
+            var LowestTankUnitParty = API.UnitLowestParty(out string lowestTankParty);
+            var LowestTankUnitRaid = API.UnitLowestRaid(out string lowestTankRaid);
 
             if (!API.PlayerIsMounted && !API.PlayerSpellonCursor && (IsOOC || API.PlayerIsInCombat) && IsNotEating && (!TargetHasDebuff("Gluttonous Miasma") || IsMouseover && !MouseoverHasDebuff("Gluttonous Miasma")))
             {
@@ -677,6 +679,11 @@ namespace HyperElk.Core
                 // Auto Target
                 if (IsAutoSwap && (IsOOC || API.PlayerIsInCombat))
                 {
+                    if (API.PlayerHealthPercent <= PlayerHP && API.TargetIsUnit() != "player")
+                    {
+                        API.CastSpell(Player);
+                        return;
+                    }
                     if (!API.PlayerIsInGroup && !API.PlayerIsInRaid)
                     {
                         if (API.PlayerHealthPercent <= PlayerHP && API.TargetIsUnit() != "player")
@@ -689,80 +696,78 @@ namespace HyperElk.Core
                     {
                         for (int j = 0; j < DispellList.Length; j++)
                             for (int i = 0; i < API.partyunits.Length; i++)
-                                for (int t = 0; t < API.raidunits.Length; t++)
-                                {
-                                    if (API.PlayerHealthPercent <= PlayerHP && API.TargetIsUnit() != "player")
-                                    {
-                                        API.CastSpell(Player);
-                                        return;
-                                    }
-                                    if (UnitHasDispellAble(DispellList[j], API.partyunits[i]) && IsDispell && !API.SpellISOnCooldown(Purify) && API.TargetIsUnit() != API.partyunits[i])
-                                    {
-                                        API.CastSpell(API.partyunits[i]);
-                                        return;
-                                    }
-                                    if (UnitLowest != "none" && API.UnitHealthPercent(UnitLowest) <= 10 && API.TargetIsUnit() != UnitLowest)
-                                    {
-                                        API.CastSpell(UnitLowest);
-                                        return;
-                                    }
-                                    if (API.PlayerIsInGroup && !API.PlayerIsInRaid)
-                                    {
-                                        if (API.UnitRoleSpec(API.partyunits[i]) == 999 && !API.UnitHasBuff(PrayerofMending, API.partyunits[i]) && !API.SpellISOnCooldown(PrayerofMending) && API.UnitHealthPercent(API.partyunits[i]) > 0 && API.TargetIsUnit() != API.partyunits[i])
-                                        {
-                                            API.CastSpell(API.partyunits[i]);
-                                            return;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (API.PlayerIsInRaid)
-                                        {
-                                            if (API.UnitRoleSpec(API.raidunits[t]) == 999 && !API.UnitHasBuff(PrayerofMending, API.raidunits[t]) && !API.SpellISOnCooldown(PrayerofMending) && API.UnitHealthPercent(API.raidunits[t]) > 0 && API.TargetIsUnit() != API.raidunits[t])
-                                            {
-                                                API.CastSpell(API.raidunits[t]);
-                                                return;
-                                            }
-                                        }
-                                    }
-                                    if (LowestTankUnit != "none" && (!SwapWatch.IsRunning || SwapWatch.ElapsedMilliseconds >= API.SpellGCDTotalDuration * 10) && !UnitHasDebuff("Gluttonous Miasma", LowestTankUnit) && API.UnitHealthPercent(LowestTankUnit) <= TankHealth && API.TargetIsUnit() != LowestTankUnit)
-                                    {
-                                        API.CastSpell(LowestTankUnit);
-                                        SwapWatch.Restart();
-                                        return;
-                                    }
-                                    if (UnitLowest != "none" && (!SwapWatch.IsRunning || SwapWatch.ElapsedMilliseconds >= API.SpellGCDTotalDuration * 10) && !UnitHasDebuff("Gluttonous Miasma", UnitLowest) && API.UnitHealthPercent(UnitLowest) <= UnitHealth && API.TargetIsUnit() != UnitLowest)
-                                    {
-                                        API.CastSpell(UnitLowest);
-                                        SwapWatch.Restart();
-                                        return;
-                                    }
-                                    if (API.PlayerIsInGroup && !API.PlayerIsInRaid)
-                                    {
-                                        if (IsDPS && !API.PlayerCanAttackTarget && API.UnitRoleSpec(API.partyunits[i]) == API.TankRole && !API.MacroIsIgnored("Assist") && API.UnitAboveHealthPercentParty(AoEDPSHLifePercent) >= AoEDPSNumber && API.UnitRange(API.partyunits[i]) <= 40 && API.UnitHealthPercent(API.partyunits[i]) > 0 && API.PlayerIsInCombat && API.TargetIsUnit() != API.partyunits[i])
-                                        {
-                                            API.CastSpell(API.partyunits[i]);
-                                            API.CastSpell("Assist");
-                                            SwapWatch.Restart();
-                                            return;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (API.PlayerIsInRaid)
-                                        {
-                                            if (IsDPS && !API.PlayerCanAttackTarget && API.UnitRange(API.raidunits[t]) <= 40 && API.UnitRoleSpec(API.raidunits[t]) == API.TankRole && !API.MacroIsIgnored("Assist") && API.UnitAboveHealthPercentRaid(AoEDPSHRaidLifePercent) >= AoEDPSRaidNumber && API.UnitHealthPercent(API.raidunits[t]) > 0 && API.PlayerIsInCombat && API.TargetIsUnit() != API.raidunits[i])
-                                            {
-                                                API.CastSpell(API.raidunits[t]);
-                                                SwapWatch.Restart();
-                                                API.CastSpell("Assist");
-                                                return;
-                                            }
-                                        }
-                                    }
-                                }
-                               
+                            {
 
+                                if (UnitHasDispellAble(DispellList[j], API.partyunits[i]) && IsDispell && !API.SpellISOnCooldown(Purify) && API.TargetIsUnit() != API.partyunits[i])
+                                {
+                                    API.CastSpell(API.partyunits[i]);
+                                    return;
+                                }
+                                if (UnitLowestParty != "none" && API.UnitHealthPercent(UnitLowestParty) <= 10 && API.TargetIsUnit() != UnitLowestParty)
+                                {
+                                    API.CastSpell(UnitLowestParty);
+                                    return;
+                                }
+                                if (API.UnitRoleSpec(API.partyunits[i]) == 999 && !API.UnitHasBuff(PrayerofMending, API.partyunits[i]) && !API.SpellISOnCooldown(PrayerofMending) && API.UnitHealthPercent(API.partyunits[i]) > 0 && API.TargetIsUnit() != API.partyunits[i])
+                                {
+                                    API.CastSpell(API.partyunits[i]);
+                                    return;
+                                }
+                                if (LowestTankUnitParty != "none" && (!SwapWatch.IsRunning || SwapWatch.ElapsedMilliseconds >= API.SpellGCDTotalDuration * 10) && API.UnitHealthPercent(LowestTankUnitParty) <= TankHealth && API.TargetIsUnit() != LowestTankUnitParty)
+                                {
+                                    API.CastSpell(LowestTankUnitParty);
+                                    SwapWatch.Restart();
+                                    return;
+                                }
+                                if (UnitLowestParty != "none" && (!SwapWatch.IsRunning || SwapWatch.ElapsedMilliseconds >= API.SpellGCDTotalDuration * 10) && API.UnitHealthPercent(UnitLowestParty) <= UnitHealth && API.TargetIsUnit() != UnitLowestParty)
+                                {
+                                    API.CastSpell(UnitLowestParty);
+                                    SwapWatch.Restart();
+                                    return;
+                                }
+                                if (IsDPS && !API.PlayerCanAttackTarget && API.UnitRoleSpec(API.partyunits[i]) == API.TankRole && !API.MacroIsIgnored("Assist") && API.UnitAboveHealthPercentParty(AoEDPSHLifePercent) >= AoEDPSNumber && API.UnitRange(API.partyunits[i]) <= 40 && API.UnitHealthPercent(API.partyunits[i]) > 0 && API.PlayerIsInCombat && API.TargetIsUnit() != API.partyunits[i])
+                                {
+                                    API.CastSpell(API.partyunits[i]);
+                                    API.CastSpell("Assist");
+                                    SwapWatch.Restart();
+                                    return;
+                                }
+                            }
+                    }
+                    if (API.PlayerIsInRaid)
+                    {
+                        for (int t = 0; t < API.raidunits.Length; t++)
+                        {
+                            if (UnitLowestRaid != "none" && API.UnitHealthPercent(UnitLowestRaid) <= 10 && API.TargetIsUnit() != UnitLowestRaid && !UnitHasDebuff("Gluttonous Miasma", UnitLowestRaid))
+                            {
+                                API.CastSpell(UnitLowestRaid);
+                                return;
+                            }
+                            if (API.UnitRoleSpec(API.raidunits[t]) == 999 && !API.UnitHasBuff(PrayerofMending, API.raidunits[t]) && !API.SpellISOnCooldown(PrayerofMending) && API.UnitHealthPercent(API.raidunits[t]) > 0 && API.TargetIsUnit() != API.raidunits[t])
+                            {
+                                API.CastSpell(API.raidunits[t]);
+                                return;
+                            }
+                            if (LowestTankUnitRaid != "none" && (!SwapWatch.IsRunning || SwapWatch.ElapsedMilliseconds >= API.SpellGCDTotalDuration * 10) && !UnitHasDebuff("Gluttonous Miasma", LowestTankUnitRaid) && API.UnitHealthPercent(LowestTankUnitRaid) <= TankHealth && API.TargetIsUnit() != LowestTankUnitRaid)
+                            {
+                                API.CastSpell(LowestTankUnitRaid);
+                                SwapWatch.Restart();
+                                return;
+                            }
+                            if (UnitLowestRaid != "none" && (!SwapWatch.IsRunning || SwapWatch.ElapsedMilliseconds >= API.SpellGCDTotalDuration * 10) && !UnitHasDebuff("Gluttonous Miasma", UnitLowestRaid) && API.UnitHealthPercent(UnitLowestRaid) <= UnitHealth && API.TargetIsUnit() != UnitLowestRaid)
+                            {
+                                API.CastSpell(UnitLowestRaid);
+                                SwapWatch.Restart();
+                                return;
+                            }
+                            if (IsDPS && !API.PlayerCanAttackTarget && API.UnitRange(API.raidunits[t]) <= 40 && API.UnitRoleSpec(API.raidunits[t]) == API.TankRole && !API.MacroIsIgnored("Assist") && API.UnitAboveHealthPercentRaid(AoEDPSHRaidLifePercent) >= AoEDPSRaidNumber && API.UnitHealthPercent(API.raidunits[t]) > 0 && API.PlayerIsInCombat && API.TargetIsUnit() != API.raidunits[t])
+                            {
+                                API.CastSpell(API.raidunits[t]);
+                                SwapWatch.Restart();
+                                API.CastSpell("Assist");
+                                return;
+                            }
+                        }
                     }
                 }
 
