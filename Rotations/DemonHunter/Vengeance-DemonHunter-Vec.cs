@@ -72,7 +72,7 @@ namespace HyperElk.Core
         string[] Throw_GlaiveList = new string[] { "On", "Off" };
         string[] SigilofFlameList = new string[] { "On", "Off" };
         string[] InfernalStrikeList = new string[] { "On", "Off" };
-        string[] FelDevastationList = new string[] { "never", "always", "with Cooldowns" };
+        string[] FelDevastationList = new string[] { "never", "always", "with Cooldowns", "with HP" };
         string[] BulkExtractionList = new string[] { "never", "always", "with Cooldowns" };
         string[] UseListwithHP = new string[] { "never", "With Cooldowns", "On Cooldown", "on AOE", "on HP" };
 
@@ -102,6 +102,7 @@ namespace HyperElk.Core
         private int SpiritualHealingPotionLifePercent => numbList[CombatRoutine.GetPropertyInt(SpiritualHealingPotion)];
         private int Trinket1HP => numbList[CombatRoutine.GetPropertyInt("Trinket1HP")];
         private int Trinket2HP => numbList[CombatRoutine.GetPropertyInt("Trinket2HP")];
+        private int FelDevastationHP => numbList[CombatRoutine.GetPropertyInt("Fel_Devastation_HP")];
 
         private float fury_deficit => API.PlayeMaxFury - API.PlayerFury;
         //pooling_for_meta,value=!talent.demonic.enabled&cooldown.metamorphosis.remains<6&fury.deficit>30
@@ -124,7 +125,7 @@ namespace HyperElk.Core
             CombatRoutine.AddSpell("Soul Cleave",228477, "D3");
             CombatRoutine.AddSpell("Immolation Aura",258920, "D4");
             CombatRoutine.AddSpell("Sigil of Flame",204596, "D7");
-            CombatRoutine.AddSpell("Fel Devastation",212084, "D5");
+            CombatRoutine.AddSpell(Fel_Devastation,212084, "D5");
             CombatRoutine.AddSpell("Fracture",263642, "D2");
             CombatRoutine.AddSpell("Spirit Bomb",247454, "Oem6");
             CombatRoutine.AddSpell("Disrupt",183752, "NumPad1");
@@ -178,6 +179,7 @@ namespace HyperElk.Core
             CombatRoutine.AddProp(Sigil_of_Flame, "Use " + Sigil_of_Flame, SigilofFlameList, "Use " + Sigil_of_Flame + "On, Off", "Cooldowns", 0);
             CombatRoutine.AddProp(Infernal_Strike, "Use " + Infernal_Strike, InfernalStrikeList, "Use " + Infernal_Strike + "On, Off", "Cooldowns", 0);
             CombatRoutine.AddProp(Fel_Devastation, "Use " + Fel_Devastation, FelDevastationList, "Use " + Fel_Devastation + "always, with Cooldowns", "Cooldowns", 0);
+            CombatRoutine.AddProp("Fel_Devastation_HP", "Use " + Fel_Devastation +" HP %", numbList, "Use " + Fel_Devastation + "with HP", "Defense", 20);
             CombatRoutine.AddProp(Bulk_Extraction, "Use " + Bulk_Extraction, BulkExtractionList, "Use " + Bulk_Extraction + "always, with Cooldowns", "Cooldowns", 0);
             CombatRoutine.AddProp(SigilofSilence, SigilofSilence, true, "Enable if you want to let the rotation use" + SigilofSilence, "Generic");
             CombatRoutine.AddProp(SigilofMisery, SigilofMisery, true, "Enable if you want to let the rotation use" + SigilofMisery, "Generic");
@@ -348,10 +350,10 @@ namespace HyperElk.Core
                     API.CastSpell("Spirit Bomb");
                     return;
                 }
-                // apl_normal->add_action(this, "Fel Devastation");
-                if (!API.SpellISOnCooldown("Fel Devastation") && (UseFelDevastation == "with Cooldowns" && IsCooldowns || UseFelDevastation == "always") && API.PlayerFury >= 50 && API.TargetRange <= 5)
+                // apl_normal->add_action(this, Fel_Devastation);
+                if (!API.SpellISOnCooldown(Fel_Devastation) && (UseFelDevastation == "with Cooldowns" && IsCooldowns || UseFelDevastation == "always" || UseFelDevastation == "with HP" && API.PlayerHealthPercent <= FelDevastationHP) && API.PlayerFury >= 50 && API.TargetRange <= 5)
                 {
-                    API.CastSpell("Fel Devastation");
+                    API.CastSpell(Fel_Devastation);
                     return;
                 }
                 // apl_normal->add_action(this, "Soul Cleave", "if=((talent.spirit_bomb.enabled&soul_fragments=0)|!talent.spirit_bomb.enabled)&((talent.fracture.enabled&fury>=55)|(!talent.fracture.enabled&fury>=70)|cooldown.fel_devastation.remains>target.time_to_die|(buff.metamorphosis.up&((talent.fracture.enabled&fury>=35)|(!talent.fracture.enabled&fury>=50))))");
