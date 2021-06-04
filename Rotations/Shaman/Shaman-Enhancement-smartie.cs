@@ -20,6 +20,7 @@
 // v2.7 hotfix
 // v2.8 trinkets ignore
 // v2.9 auto dps potion added
+// v3.0 hotfix for potion
 
 using System.Diagnostics;
 namespace HyperElk.Core
@@ -139,7 +140,7 @@ namespace HyperElk.Core
         public override void Initialize()
         {
             CombatRoutine.Name = "Enhancement Shaman by smartie";
-            API.WriteLog("Welcome to smartie`s Enhancement Shaman v2.9");
+            API.WriteLog("Welcome to smartie`s Enhancement Shaman v3.0");
             API.WriteLog("For this rota you need to following macros");
             API.WriteLog("For Earthshield on Focus: /cast [@focus,help] Earth shield");
 
@@ -395,7 +396,7 @@ namespace HyperElk.Core
                 return;
             }
             //Potion
-            if (API.PlayerItemCanUse(PotionofSpectralAgility) && !API.MacroIsIgnored(PotionofSpectralAgility) && API.PlayerItemRemainingCD(PotionofSpectralAgility) == 0 && IsCooldowns && API.PlayerHasBuff(Ascendance))
+            if (API.PlayerItemCanUse(PotionofSpectralAgility) && UsePotion && !API.MacroIsIgnored(PotionofSpectralAgility) && API.PlayerItemRemainingCD(PotionofSpectralAgility) == 0 && IsCooldowns && API.PlayerHasBuff(Ascendance))
             {
                 API.CastSpell(PotionofSpectralAgility);
                 return;
