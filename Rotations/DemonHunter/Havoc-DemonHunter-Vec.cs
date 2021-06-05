@@ -5,6 +5,7 @@ namespace HyperElk.Core
     {
 
         private bool IsMouseover => API.ToggleIsEnabled("Mouseover");
+        private bool UseBladeDance => API.ToggleIsEnabled("Blade Dance");
         //Spells,Buffs,Debuffs
         private string Metamorphosis = "Metamorphosis";
         private string Throw_Glaive = "Throw Glaive";
@@ -214,7 +215,6 @@ namespace HyperElk.Core
             CombatRoutine.AddSpell(TheHunt, 323639, "NumPad6");
             CombatRoutine.AddSpell(fodder_to_the_flame, 329554, "NumPad6");
             CombatRoutine.AddSpell(elysian_decree, 306830, "NumPad6");
-            CombatRoutine.AddSpell(ConsumeMagic, 278326, "NumPad9");
 
             CombatRoutine.AddMacro("Trinket1", "F9");
             CombatRoutine.AddMacro("Trinket2", "F10");
@@ -243,6 +243,7 @@ namespace HyperElk.Core
 
             //Toggle
             CombatRoutine.AddToggle("Mouseover");
+            CombatRoutine.AddToggle("Blade Dance");
             AddProp("MouseoverInCombat", "Only Mouseover in combat", false, "Only Attack mouseover in combat to avoid stupid pulls", "Generic");
 
             //Settings
@@ -376,7 +377,7 @@ namespace HyperElk.Core
 
                     }
                     //blade_dance,if= variable.blade_dance & debuff.essence_break.up
-                    else if (API.CanCast(Blade_Dance) && API.PlayerLevel >= 12  && API.TargetHasDebuff(Essence_Break) && BladeDance  && MeleeRange)
+                    else if (API.CanCast(Blade_Dance) && UseBladeDance && API.PlayerLevel >= 12  && API.TargetHasDebuff(Essence_Break) && BladeDance  && MeleeRange)
                     {
                         API.CastSpell(Blade_Dance);
 
@@ -423,7 +424,7 @@ namespace HyperElk.Core
                     }
 
                     //blade_dance,if= variable.blade_dance & !cooldown.metamorphosis.ready & (cooldown.eye_beam.remains > (5 - azerite.revolving_blades.rank * 3))
-                    else if (API.CanCast(Blade_Dance) && BladeDance && API.PlayerLevel >= 12  && API.PlayerLevel >= 20 && API.SpellCDDuration(Eye_Beam) > (500) && MeleeRange)
+                    else if (API.CanCast(Blade_Dance) && UseBladeDance && BladeDance && API.PlayerLevel >= 12  && API.PlayerLevel >= 20 && API.SpellCDDuration(Eye_Beam) > (500) && MeleeRange)
                     {
                         API.CastSpell(Blade_Dance);
 
@@ -517,7 +518,7 @@ namespace HyperElk.Core
                     }
 
                     // blade_dance,if= variable.blade_dance
-                    else if (API.CanCast(Blade_Dance) && API.PlayerLevel >= 12 && BladeDance   && MeleeRange)
+                    else if (API.CanCast(Blade_Dance) && UseBladeDance && API.PlayerLevel >= 12 && BladeDance   && MeleeRange)
                     {
                         API.CastSpell(Blade_Dance);
 

@@ -14,6 +14,7 @@
 // v1.65 small adjustment
 // v1.7 small adjustment to void erruption
 // v1.8 alot of small updates
+// v1.9 small update
 
 using System.Diagnostics;
 using System.Linq;
@@ -71,6 +72,9 @@ namespace HyperElk.Core
         private string AoERaid = "AoERaid";
         private string Soulshape = "Soulshape";
         private string AscendedNova = "Ascended Nova";
+        private string BenevolentFaerie = "Benevolent Faerie";
+        private string GuardianFaerie = "Guardian Faerie";
+        private string Potion = "Potion of Spectral Intellect";
 
         //Talents
         bool TalentBodyandSoul => API.PlayerIsTalentSelected(2, 1);
@@ -103,7 +107,7 @@ namespace HyperElk.Core
         bool ChannelingMindFlay => API.CurrentCastSpellID("player") == 15407;
         bool ChannelingMindSear => API.CurrentCastSpellID("player") == 48045;
         bool CastingVT => API.CurrentCastSpellID("player") == 263165;
-        bool VampircTouchLast => API.LastSpellCastInGame == VampiricTouch || API.CurrentCastSpellID("player") == 34914;
+        bool VampiricTouchLast => API.LastSpellCastInGame == VampiricTouch || API.CurrentCastSpellID("player") == 34914;
         //actions+=/variable,name=dots_up,op=set,value=dot.shadow_word_pain.ticking&dot.vampiric_touch.ticking
         bool dots_up => TargetHasDebuff(SWPain) && (TargetHasDebuff(VampiricTouch) && PlayerLevel >= 15 || PlayerLevel <15);
         //actions+=/variable,name=all_dots_up,op=set,value=dot.shadow_word_pain.ticking&dot.vampiric_touch.ticking&dot.devouring_plague.ticking
@@ -168,10 +172,12 @@ namespace HyperElk.Core
         private string IsLegendary => Legendary[CombatRoutine.GetPropertyInt("IsLegendary")];
         private bool Quaking => ((API.PlayerCurrentCastTimeRemaining >= 200 || API.PlayerIsChanneling) && API.PlayerDebuffRemainingTime(Quake) < 200) && PlayerHasDebuff(Quake);
         private bool SaveQuake => (PlayerHasDebuff(Quake) && API.PlayerDebuffRemainingTime(Quake) > 200 && QuakingHelper || !PlayerHasDebuff(Quake) || !QuakingHelper);
+        private bool FaeGuardiansUP => PlayerHasBuff(BenevolentFaerie) || PlayerHasBuff(GuardianFaerie);
+        public bool UseDPSPotion => CombatRoutine.GetPropertyBool("UseDPSPotion");
         public override void Initialize()
         {
             CombatRoutine.Name = "Shadow Priest by smartie";
-            API.WriteLog("Welcome to smartie`s Shadow Priest v1.8");
+            API.WriteLog("Welcome to smartie`s Shadow Priest v1.9");
             API.WriteLog("For this rota you need to following macros");
             API.WriteLog("For stopcasting (needed for quaking helper): /stopcasting");
             API.WriteLog("Shadow Word: PainMO - /cast [@mouseover] Shadow Word: Pain");
@@ -228,11 +234,14 @@ namespace HyperElk.Core
             CombatRoutine.AddBuff(BoonOfTheAscended, 325013);
             CombatRoutine.AddBuff(PowerInfusion, 10060);
             CombatRoutine.AddBuff(DissonantEchoes, 343144);
-            CombatRoutine.AddBuff(FaeGuardians, 327661);
             CombatRoutine.AddBuff(Soulshape, 310143);
             CombatRoutine.AddBuff(SurrendertoMadness, 193223);
+            CombatRoutine.AddBuff(FaeGuardians, 327661);
+            CombatRoutine.AddBuff(GuardianFaerie, 327694);
+            CombatRoutine.AddBuff(BenevolentFaerie, 327710);
 
             //Debuff
+            CombatRoutine.AddDebuff(WrathfulFaerie, 342132);
             CombatRoutine.AddDebuff(DevouringPlague, 335467);
             CombatRoutine.AddDebuff(SWPain, 589);
             CombatRoutine.AddDebuff(WeakenedSoul, 6788);
@@ -240,7 +249,6 @@ namespace HyperElk.Core
             CombatRoutine.AddDebuff(ShadowCrash, 205385);
             CombatRoutine.AddDebuff(Quake, 240447);
             CombatRoutine.AddDebuff(HungeringVoid, 345219);
-            CombatRoutine.AddDebuff(WrathfulFaerie, 342132);
 
             //Toggle
             CombatRoutine.AddToggle("Mouseover");
@@ -249,6 +257,7 @@ namespace HyperElk.Core
             //Item
             CombatRoutine.AddItem(PhialofSerenity, 177278);
             CombatRoutine.AddItem(SpiritualHealingPotion, 171267);
+            CombatRoutine.AddItem(Potion, 171273);
 
 
             //Prop
@@ -277,6 +286,7 @@ namespace HyperElk.Core
             CombatRoutine.AddProp(AoE, "Vampiric Embrace Party Units ", numbPartyList, " in Party", "VampiricEmbrace", 3);
             CombatRoutine.AddProp(AoERaid, "Vampiric Embrace Raid Units ", numbRaidList, "  in Raid", "VampiricEmbrace", 5);
             CombatRoutine.AddProp(VampiricEmbrace, VampiricEmbrace + " Life Percent", numbList, "Life percent at which" + VampiricEmbrace + " is used, set to 0 to disable", "VampiricEmbrace", 50);
+            CombatRoutine.AddProp("UseDPSPotion", "Use DPS Potion", false, "Will use DPS potion with cds", "Cooldowns");
         }
         public override void Pulse()
         {
@@ -392,6 +402,12 @@ namespace HyperElk.Core
             {
                 if (IsInRange)
                 {
+                    //POtion
+                    if (!API.MacroIsIgnored(Potion) && UseDPSPotion && API.PlayerItemCanUse(Potion) && API.PlayerItemRemainingCD(Potion) == 0 && PlayerHasBuff(PowerInfusion))
+                    {
+                        API.CastSpell(Potion);
+                        return;
+                    }
                     //actions+=/fireblood,if=buff.voidform.up
                     if (PlayerRaceSettings == "Dark Iron Dwarf" && API.CanCast(RacialSpell1) && isRacial && IsCooldowns && PlayerHasBuff(Voidform))
                     {
@@ -448,13 +464,13 @@ namespace HyperElk.Core
                         return;
                     }
                     //actions.main+=/shadow_word_pain,if=buff.fae_guardians.up&!debuff.wrathful_faerie.up&spell_targets.mind_sear<4
-                    if (API.CanCast(SWPain) && API.PlayerMana >= 0.3 && PlayerHasBuff(FaeGuardians) && !TargetHasDebuff(WrathfulFaerie) && (API.TargetUnitInRangeCount < 4 || !IsAOE))
+                    if (API.CanCast(SWPain) && API.PlayerMana >= 0.3 && FaeGuardiansUP && !TargetHasDebuff(WrathfulFaerie) && (API.TargetUnitInRangeCount < 4 || !IsAOE))
                     {
                         API.CastSpell(SWPain);
                         return;
                     }
                     //actions.cds=power_infusion,if=priest.self_power_infusion&(buff.voidform.up|!soulbind.combat_meditation.enabled&cooldown.void_eruption.remains>=10|fight_remains<cooldown.void_eruption.remains)&(fight_remains>=cooldown.void_eruption.remains+15&cooldown.void_eruption.remains<=gcd*4|fight_remains>cooldown.power_infusion.duration|fight_remains<cooldown.void_eruption.remains+15|covenant.kyrian|buff.bloodlust.up)
-                    if (API.CanCast(PowerInfusion) && IsPowerInfusion && (API.PlayerHasBuff(Voidform) || API.SpellCDDuration(VoidEruption) >= 1000))
+                    if (API.CanCast(PowerInfusion) && IsPowerInfusion && !PlayerHasBuff(PowerInfusion) && (API.PlayerHasBuff(Voidform) || API.SpellCDDuration(VoidEruption) >= 1000))
                     {
                         API.CastSpell(PowerInfusion);
                         return;
@@ -514,19 +530,19 @@ namespace HyperElk.Core
                         return;
                     }
                     //actions.main+=/shadow_word_death,if=pet.fiend.active&runeforge.shadowflame_prism.equipped&pet.fiend.remains<=gcd
-                    if (API.CanCast(SWDeath) && API.PlayerMana >= 0.5 && IsLegendary == "Shadowflame Prism" && API.PlayerTotemPetDuration <= gcd && API.PlayerTotemPetDuration != 0)
+                    if (API.CanCast(SWDeath) && API.PlayerMana >= 0.5 && IsLegendary == "Shadowflame Prism" && API.PlayerTotemPetDuration <= gcd*2 && API.PlayerTotemPetDuration != 0)
                     {
                         API.CastSpell(SWDeath);
                         return;
                     }
                     //actions.main+=/mind_blast,if=(cooldown.mind_blast.charges>1&(debuff.hungering_void.up|!talent.hungering_void.enabled)|pet.fiend.remains<=cast_time+gcd)&pet.fiend.active&runeforge.shadowflame_prism.equipped&pet.fiend.remains>=cast_time
-                    if (API.CanCast(MindBlast) && API.PlayerMana >= 0.25 && (IsNotMoving || PlayerHasBuff(DarkThoughts)) && ((API.SpellCharges(MindBlast) > 1 && (TargetHasDebuff(HungeringVoid) || !TalentHungeringVoid) || API.PlayerTotemPetDuration <= gcd* 2 && API.PlayerTotemPetDuration != 0) && IsLegendary == "Shadowflame Prism" && API.PlayerTotemPetDuration >= gcd*2))
+                    if (API.CanCast(MindBlast) && API.PlayerMana >= 0.25 && API.PlayerInsanity <= 75 && (IsNotMoving || PlayerHasBuff(DarkThoughts)) && ((API.SpellCharges(MindBlast) > 1 && (TargetHasDebuff(HungeringVoid) || !TalentHungeringVoid) || API.PlayerTotemPetDuration <= gcd* 2 && API.PlayerTotemPetDuration != 0) && IsLegendary == "Shadowflame Prism" && API.PlayerTotemPetDuration >= gcd*2))
                     {
                         API.CastSpell(MindBlast);
                         return;
                     }
                     //actions.main+=/mind_blast,if=cooldown.mind_blast.charges>1&pet.fiend.active&runeforge.shadowflame_prism.equipped&!cooldown.void_bolt.up
-                    if (API.CanCast(MindBlast) && API.PlayerMana >= 0.25 && (IsNotMoving || PlayerHasBuff(DarkThoughts)) && (API.SpellCharges(MindBlast) > 1 && API.PlayerTotemPetDuration > gcd*2 && IsLegendary == "Shadowflame Prism" && API.SpellCDDuration(VoidBolt) > gcd))
+                    if (API.CanCast(MindBlast) && API.PlayerMana >= 0.25 && API.PlayerInsanity <= 75 && (IsNotMoving || PlayerHasBuff(DarkThoughts)) && (API.SpellCharges(MindBlast) > 1 && API.PlayerTotemPetDuration > gcd*2 && IsLegendary == "Shadowflame Prism" && API.SpellCDDuration(VoidBolt) > gcd))
                     {
                         API.CastSpell(MindBlast);
                         return;
@@ -585,25 +601,25 @@ namespace HyperElk.Core
                         return;
                     }
                     //actions.main+=/mind_sear,target_if=spell_targets.mind_sear>variable.mind_sear_cutoff&buff.dark_thought.up,chain=1,interrupt_immediate=1,interrupt_if=ticks>=2
-                    if (API.CanCast(MindSear) && !API.PlayerIsCasting(true) && IsNotMoving && PlayerHasBuff(DarkThoughts) && (API.TargetUnitInRangeCount >= AOEUnitNumber && IsAOE || IsForceAOE))
+                    if (API.CanCast(MindSear) && !API.PlayerIsCasting(true) && API.PlayerInsanity <= 75 && IsNotMoving && PlayerHasBuff(DarkThoughts) && (API.TargetUnitInRangeCount >= AOEUnitNumber && IsAOE || IsForceAOE))
                     {
                         API.CastSpell(MindSear);
                         return;
                     }
                     //actions.main+=/mind_flay,if=buff.dark_thought.up&variable.dots_up,chain=1,interrupt_immediate=1,interrupt_if=ticks>=2&cooldown.void_bolt.up
-                    if (API.CanCast(MindFlay) && !API.PlayerIsCasting(true) && IsNotMoving && PlayerHasBuff(DarkThoughts) && dots_up && !IsForceAOE)
+                    if (API.CanCast(MindFlay) && !API.PlayerIsCasting(true) && API.PlayerInsanity <= 75 && IsNotMoving && PlayerHasBuff(DarkThoughts) && dots_up && !IsForceAOE)
                     {
                         API.CastSpell(MindFlay);
                         return;
                     }
                     //actions.main+=/mind_blast,if=variable.dots_up&raid_event.movement.in>cast_time+0.5&spell_targets.mind_sear<(4+2*talent.misery.enabled+active_dot.vampiric_touch*talent.psychic_link.enabled+(spell_targets.mind_sear>?5)*(pet.fiend.active&runeforge.shadowflame_prism.equipped))&(!runeforge.shadowflame_prism.equipped|!cooldown.fiend.up&runeforge.shadowflame_prism.equipped|active_dot.vampiric_touch==spell_targets.vampiric_touch)
-                    if (API.CanCast(MindBlast) && API.PlayerMana >= 0.25 && (IsNotMoving || PlayerHasBuff(DarkThoughts)) && (dots_up || (IsForceAOE || IsAOE) && TargetHasDebuff(VampiricTouch) || TalentSearingNightmare && searing_nightmare_cutoff && TargetHasDebuff(VampiricTouch) && (IsAOE || IsForceAOE)) && (API.TargetUnitInRangeCount < 4 && !IsForceAOE || IsLegendary == "Shadowflame Prism" && API.PlayerTotemPetDuration > gcd))
+                    if (API.CanCast(MindBlast) && API.PlayerMana >= 0.25 && API.PlayerInsanity <= 75 && (IsNotMoving || PlayerHasBuff(DarkThoughts)) && (dots_up || (IsForceAOE || IsAOE) && TargetHasDebuff(VampiricTouch) || TalentSearingNightmare && searing_nightmare_cutoff && TargetHasDebuff(VampiricTouch) && (IsAOE || IsForceAOE)) && (API.TargetUnitInRangeCount < 4 && !IsForceAOE || IsLegendary == "Shadowflame Prism" && API.PlayerTotemPetDuration > gcd))
                     {
                         API.CastSpell(MindBlast);
                         return;
                     }
                     //actions.main+=/vampiric_touch,target_if=refreshable&target.time_to_die>6|(talent.misery.enabled&dot.shadow_word_pain.refreshable)|buff.unfurling_darkness.up
-                    if (API.CanCast(VampiricTouch) && IsNotMoving && !VampircTouchLast && (API.TargetDebuffRemainingTime(VampiricTouch) < 630 || (TalentMisery && API.TargetDebuffRemainingTime(SWPain) < 360) || PlayerHasBuff(UnfurlingDarkness)))
+                    if (API.CanCast(VampiricTouch) && IsNotMoving && !VampiricTouchLast && (API.TargetDebuffRemainingTime(VampiricTouch) < 630 || (TalentMisery && API.TargetDebuffRemainingTime(SWPain) < 360) || PlayerHasBuff(UnfurlingDarkness)))
                     {
                         API.CastSpell(VampiricTouch);
                         return;
@@ -622,7 +638,7 @@ namespace HyperElk.Core
                     }
                     if (IsMouseover && (!isMouseoverInCombat || API.MouseoverIsIncombat) && API.PlayerCanAttackMouseover && isMOinRange && API.MouseoverHealthPercent > 0)
                     {
-                        if (API.CanCast(VampiricTouch) && IsNotMoving && !API.MacroIsIgnored(VampiricTouch + "MO") && !VampircTouchLast && (API.MouseoverDebuffRemainingTime(VampiricTouch) < 630 || (TalentMisery && API.MouseoverDebuffRemainingTime(SWPain) < 360) || PlayerHasBuff(UnfurlingDarkness)))
+                        if (API.CanCast(VampiricTouch) && IsNotMoving && !API.MacroIsIgnored(VampiricTouch + "MO") && !VampiricTouchLast && (API.MouseoverDebuffRemainingTime(VampiricTouch) < 630 || (TalentMisery && API.MouseoverDebuffRemainingTime(SWPain) < 360) || PlayerHasBuff(UnfurlingDarkness)))
                         {
                             API.CastSpell(VampiricTouch + "MO");
                             return;
@@ -639,19 +655,19 @@ namespace HyperElk.Core
                         }
                     }
                     //actions.main+=/mind_sear,target_if=spell_targets.mind_sear>variable.mind_sear_cutoff,chain=1,interrupt_immediate=1,interrupt_if=ticks>=2
-                    if (API.CanCast(MindSear) && !API.PlayerIsCasting(true) && IsNotMoving && (API.TargetUnitInRangeCount >= AOEUnitNumber && IsAOE || IsForceAOE))
+                    if (API.CanCast(MindSear) && API.PlayerInsanity <= 75 && !API.PlayerIsCasting(true) && IsNotMoving && (API.TargetUnitInRangeCount >= AOEUnitNumber && IsAOE || IsForceAOE))
                     {
                         API.CastSpell(MindSear);
                         return;
                     }
                     //actions.main+=/mind_flay,chain=1,interrupt_immediate=1,interrupt_if=ticks>=2&cooldown.void_bolt.up
-                    if (API.CanCast(MindFlay) && !API.PlayerIsCasting(true) && (PlayerLevel < 26 || API.TargetUnitInRangeCount < AoENumber || !IsAOE) && !IsForceAOE && IsNotMoving)
+                    if (API.CanCast(MindFlay) && API.PlayerInsanity <= 75 && !API.PlayerIsCasting(true) && (PlayerLevel < 26 || API.TargetUnitInRangeCount < AoENumber || !IsAOE) && !IsForceAOE && IsNotMoving)
                     {
                         API.CastSpell(MindFlay);
                         return;
                     }
                     //actions.main+=/shadow_word_pain
-                    if (API.CanCast(SWPain) && API.PlayerMana >= 0.3 && SWPainMove && API.PlayerIsMoving)
+                    if (API.CanCast(SWPain) && API.PlayerInsanity <= 75 && API.PlayerMana >= 0.3 && SWPainMove && API.PlayerIsMoving)
                     {
                         API.CastSpell(SWPain);
                         return;
