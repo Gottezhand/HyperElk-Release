@@ -291,7 +291,7 @@ namespace HyperElk.Core
 
         public override void Pulse()
         {
-               // API.WriteLog("debug: " + "mend pet: " + API.CanCast(Mend_Pet));
+            // API.WriteLog("debug: " + "mend pet: " + API.CanCast(Mend_Pet));
             if (CallPetTimer.ElapsedMilliseconds > 10000)
             {
                 CallPetTimer.Stop();
@@ -526,6 +526,11 @@ namespace HyperElk.Core
                         }
                         if (PlayerHasBuff(Trueshot))
                         {
+                            if (API.CanCast(Explosive_Shot) && API.TargetTimeToDie > 300 && (UseExplosiveShot == "With Cooldowns" && IsCooldowns || UseExplosiveShot == "On Cooldown" || UseExplosiveShot == "on AOE" && ((IsAOE && (API.TargetUnitInRangeCount >= AOEUnitNumber || !AOESwitch_enabled)) || (UseCleaveRotation || API.TargetUnitInRangeCount > 1))) && API.PlayerFocus >= 20 && InRange && Talent_Explosive_Shot)
+                            {
+                                API.CastSpell(Explosive_Shot);
+                                return;
+                            }
                             if (API.CanCast(Aimed_Shot) && InRange && (PlayerHasBuff(Lock_and_Load) || !API.PlayerIsMoving) && API.PlayerFocus > 35)
                             {
                                 API.CastSpell(Aimed_Shot);
@@ -573,6 +578,11 @@ namespace HyperElk.Core
 
                 if (PlayerHasBuff(Trueshot))
                 {
+                    if (API.CanCast(Explosive_Shot) && API.TargetTimeToDie > 300 && (UseExplosiveShot == "With Cooldowns" && IsCooldowns || UseExplosiveShot == "On Cooldown" || UseExplosiveShot == "on AOE" && ((IsAOE && (API.TargetUnitInRangeCount >= AOEUnitNumber || !AOESwitch_enabled)) || (UseCleaveRotation || API.TargetUnitInRangeCount > 1))) && API.PlayerFocus >= 20 && InRange && Talent_Explosive_Shot)
+                    {
+                        API.CastSpell(Explosive_Shot);
+                        return;
+                    }
                     if (Talent_Steady_Focus && API.CanCast(Steady_Shot) && API.LastSpellCastInGame != Steady_Shot && API.PlayerCurrentCastSpellID == 56641 && API.PlayerBuffTimeRemaining(Steady_Focus) < 500 && InRange)
                     {
                         API.CastSpell(Steady_Shot);
@@ -612,7 +622,7 @@ namespace HyperElk.Core
                     else if (API.CanCast(Steady_Shot) && InRange && API.PlayerFocus + (10 + (SteadyShot_CastTime / 100) * FocusRegen) < 120 && (!API.CanCast(Rapid_Fire) || PlayerHasBuff(Double_Tap)) && (!PlayerHasBuff(Precise_Shots) || PlayerHasBuff(Precise_Shots) && API.PlayerFocus < 20) && (FullRechargeTime(Aimed_Shot, AimedShotCooldown) > SteadyShot_CastTime || API.PlayerFocus < (PlayerHasBuff(Lock_and_Load) ? 0 : 35) || API.PlayerIsMoving))
                     {
                         API.CastSpell(Steady_Shot);
-                       // API.WriteLog("st: SS:2 ");
+                        // API.WriteLog("st: SS:2 ");
                         return;
                     }
                 }
@@ -798,7 +808,7 @@ namespace HyperElk.Core
                 if (Talent_Steady_Focus && !PlayerHasBuff(Trueshot) && !VolleyTrickShots && API.CanCast(Steady_Shot) && API.LastSpellCastInGame != Steady_Shot && API.PlayerCurrentCastSpellID == 56641 && API.PlayerBuffTimeRemaining(Steady_Focus) < 500 && InRange)
                 {
                     API.CastSpell(Steady_Shot);
-                   // API.WriteLog("AOE: SS:1 ");
+                    // API.WriteLog("AOE: SS:1 ");
                     return;
                 }
                 //actions.trickshots +=/ double_tap,if= covenant.kyrian & cooldown.resonating_arrow.remains < gcd | !covenant.kyrian & !covenant.night_fae | covenant.night_fae & (cooldown.wild_spirits.remains < gcd | cooldown.trueshot.remains > 55) | target.time_to_die < 10
