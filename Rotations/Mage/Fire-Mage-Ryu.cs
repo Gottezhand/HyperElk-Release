@@ -20,8 +20,8 @@ namespace HyperElk.Core
         private string Deathborne = "Deathborne";
         private string MirrorsofTorment = "Mirrors of Torment";
         private string Fleshcraft = "Fleshcraft";
-        private string Trinket1 = "Trinket1";
-        private string Trinket2 = "Trinket2";
+        private string Trinket1 = "trinket1";
+        private string Trinket2 = "trinket2";
         private string Firestorm = "Firestorm";
         private string TimeWarp = "Time Warp";
         private string Temp = "Temporal Displacement";
@@ -142,6 +142,7 @@ namespace HyperElk.Core
         {
             return API.PlayerHasDebuff(buff, false, false);
         }
+        private bool HekiliEnabled => (bool)CombatRoutine.GetProperty("Hekili");
 
 
 
@@ -267,6 +268,7 @@ namespace HyperElk.Core
             CombatRoutine.AddProp("Trinket2", "Use " + "Trinket2", CDUsageWithAOE, "Use " + "Trinket 2" + " always, with Cooldowns", "Trinkets", 0);
             CombatRoutine.AddProp("Legendary", "Select your Legendary", LegendaryList, "Select Your Legendary", "Legendary");
             CombatRoutine.AddProp("Always Interupt", "Always Interupt", false, "Will always Interupt even if currently casting", "Generic");
+            CombatRoutine.AddProp("Hekili", "Hekili is enabled", false, "Should the rotation use Hekili recommendation", "Generic");
 
 
         }
@@ -369,17 +371,33 @@ namespace HyperElk.Core
                 }
             }
             #endregion Combustion Opener
-            if (API.PlayerIsInCombat && API.CanCast("Combustion") && Level >= 29 && (!API.PlayerIsMoving || API.PlayerIsMoving) && (!API.PlayerIsCasting(true) || API.PlayerCurrentCastTimeRemaining <= 65) && API.TargetRange <= 40 && (IsCooldowns && UseCom == "With Cooldowns" || UseCom == "On Cooldown") && Level >= 29 && !API.PlayerHasBuff("Rune of Power") && (FireStarter && API.TargetHealthPercent < 90 || !FireStarter))
-            {
-                API.CastSpell("Combustion");
-                API.WriteLog("Current Cast Time Remaining : " + API.PlayerCurrentCastTimeRemaining);
-                API.WriteLog("Is Player Casting (false)? " + API.PlayerIsCasting(false));
-                return;
-            }
         }
 
         public override void CombatPulse()
         {
+            if (!ChannelingShift && !API.PlayerSpellonCursor && NotChanneling)
+            {
+                if (HekiliEnabled)
+                { 
+                    if ((ChannelingShift && API.PlayerCurrentCastTimeRemaining > 0 || API.PlayerCurrentCastTimeRemaining > 40 && !ChannelingShift) || API.PlayerSpellonCursor)
+                        return;
+           
+                    if (API.retail_hekiliNextSpell.Contains("trinket"))
+                    {
+                        API.CastSpell(API.retail_hekiliNextSpell);
+                        return;
+                    }
+                    if (API.retail_hekiliNextSpell != "null")
+                    {
+                        if (API.CanCast(API.retail_hekiliNextSpell))
+                        {
+                            API.CastSpell(API.retail_hekiliNextSpell);
+                        }
+                        return;
+
+                    }
+                }
+            }
             if (isInterrupt && API.CanCast("Counterspell") && Level >= 7 && (API.PlayerIsCasting(false) || AlwaysInt) && NotChanneling && !ChannelingShift)
             {
                 API.CastSpell("Counterspell");
@@ -493,6 +511,13 @@ namespace HyperElk.Core
         }
         private void Testing()
         {
+            if (API.PlayerIsInCombat && API.CanCast("Combustion") && Level >= 29 && (!API.PlayerIsMoving || API.PlayerIsMoving) && (!API.PlayerIsCasting(true) || API.PlayerCurrentCastTimeRemaining <= 65) && API.TargetRange <= 40 && (IsCooldowns && UseCom == "With Cooldowns" || UseCom == "On Cooldown") && Level >= 29 && !API.PlayerHasBuff("Rune of Power") && (FireStarter && API.TargetHealthPercent < 90 || !FireStarter))
+            {
+                API.CastSpell("Combustion");
+                API.WriteLog("Current Cast Time Remaining : " + API.PlayerCurrentCastTimeRemaining);
+                API.WriteLog("Is Player Casting (false)? " + API.PlayerIsCasting(false));
+                return;
+            }
             if (!API.PlayerSpellonCursor && ChannelingShift)
             {
                 if (ChannelingShift && API.CanCast("Fire Blast") && (IsSmallCD || API.PlayerHasBuff("Combustion")) && API.SpellCharges("Fire Blast") <= 3 && (API.SpellISOnCooldown("Combustion") && API.SpellCDDuration("Combustion") > FBRecharge * 2
