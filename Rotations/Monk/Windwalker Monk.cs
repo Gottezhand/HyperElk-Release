@@ -293,7 +293,6 @@ namespace HyperElk.Core
             CombatRoutine.AddDebuff("Infectious Rain", 322232);
 
             CombatRoutine.AddToggle("Mouseover");
-            CombatRoutine.AddToggle("Hekili");
 
         }
 
