@@ -17,8 +17,8 @@ namespace HyperElk.Core
         private string Deathborne = "Deathborne";
         private string MirrorsofTorment = "Mirrors of Torment";
         private string Fleshcraft = "Fleshcraft";
-        private string Trinket1 = "Trinket1";
-        private string Trinket2 = "Trinket2";
+        private string Trinket1 = "trinket1";
+        private string Trinket2 = "trinket2";
         private string ManaGem = "Mana Gem";
         private string TimeWarp = "Time Warp";
         private string Temp = "Temporal Displacement";
@@ -118,6 +118,8 @@ namespace HyperElk.Core
         {
             return API.PlayerHasDebuff(buff, false, false);
         }
+        private bool HekiliEnabled => (bool)CombatRoutine.GetProperty("Hekili");
+
         public override void Initialize()
         {
             CombatRoutine.Name = "Arcane Mage by Ryu";
@@ -223,6 +225,7 @@ namespace HyperElk.Core
             CombatRoutine.AddProp("Always Interupt", "Always Interupt", false, "Will always Interupt even if currently casting", "Generic");
             CombatRoutine.AddProp("Trinket1", "Use " + "Trinket1", CDUsageWithAOE, "Use " + "Trinket 1" + " On Cooldown, With Cooldown, On AOEs or Not Used", "Trinkets", 0);
             CombatRoutine.AddProp("Trinket2", "Use " + "Trinket2", CDUsageWithAOE, "Use " + "Trinket 2" + "On Cooldown, With Cooldown, On AOEs or Not Used", "Trinkets", 0);
+            CombatRoutine.AddProp("Hekili", "Hekili is enabled", false, "Should the rotation use Hekili recommendation", "Generic");
 
 
 
@@ -241,6 +244,28 @@ namespace HyperElk.Core
         }
         public override void CombatPulse()
         {
+            if (!ChannelingShift && !API.PlayerSpellonCursor && NotChanneling)
+            {
+                if (HekiliEnabled)
+                {
+                    if ((ChannelingShift || ChannelingEvo || ChannelingMissile) && API.PlayerCurrentCastTimeRemaining > 0 || API.PlayerCurrentCastTimeRemaining > 40 && !ChannelingShift || API.PlayerSpellonCursor)
+                        return;
+                    if (API.retail_hekiliNextSpell.Contains("trinket"))
+                    {
+                        API.CastSpell(API.retail_hekiliNextSpell);
+                        return;
+                    }
+                    if (API.retail_hekiliNextSpell != "null")
+                    {
+                        if (API.CanCast(API.retail_hekiliNextSpell))
+                        {
+                            API.CastSpell(API.retail_hekiliNextSpell);
+                        }
+                        return;
+
+                    }
+                }
+            }
             if (API.PlayerCurrentCastTimeRemaining > 40 && QuakingHelper && Quaking)
             {
                 API.CastSpell("Stopcast");
@@ -453,7 +478,7 @@ namespace HyperElk.Core
                 API.CastSpell("Arcane Explosion");
                 return;
             }
-            if (API.CanCast("Arcane Barrage") && NotChanneling && !ChannelingShift && !ChannelingEvo && !ChannelingMissile && Level >= 10 && InRange && (API.SpellISOnCooldown("Evocation") && API.PlayerCurrentArcaneCharges <= 4 && Mana <= 75 || !API.SpellISOnCooldown("Touch of the Magi") && API.PlayerCurrentArcaneCharges == 4 || API.PlayerBuffStacks(AHL) == 15 && API.PlayerCurrentArcaneCharges >= 4 && UseLeg == "Arcane Harmony"  || API.TargetHealthPercent <= 35 && API.TargetHealthPercent > 0 && UseLeg == "Arcane Bombardment" && API.PlayerCurrentArcaneCharges == 4)  && (!API.PlayerHasBuff("Rune of Power") || !API.PlayerHasBuff("Arcane Power")) && (API.PlayerIsMoving || !API.PlayerIsMoving))
+            if (API.CanCast("Arcane Barrage") && NotChanneling && !ChannelingShift && !ChannelingEvo && !ChannelingMissile && Level >= 10 && InRange && (API.SpellISOnCooldown("Evocation") && API.PlayerCurrentArcaneCharges == 4 && Mana <= 60 || !API.SpellISOnCooldown("Touch of the Magi") && API.PlayerCurrentArcaneCharges == 4 || API.PlayerBuffStacks(AHL) == 15 && API.PlayerCurrentArcaneCharges >= 4 && UseLeg == "Arcane Harmony"  || API.TargetHealthPercent <= 35 && API.TargetHealthPercent > 0 && UseLeg == "Arcane Bombardment" && API.PlayerCurrentArcaneCharges == 4) && (API.PlayerIsMoving || !API.PlayerIsMoving))
             {
                 API.CastSpell("Arcane Barrage");
                 return;
