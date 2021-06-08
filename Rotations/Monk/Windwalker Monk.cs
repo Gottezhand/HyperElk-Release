@@ -145,6 +145,8 @@ namespace HyperElk.Core
         {
             return API.PlayerHasDebuff(debuff, false, true);
         }
+        private bool HekiliEnabled => (bool)CombatRoutine.GetProperty("Hekili");
+
         public override void Initialize()
         {
             CombatRoutine.Name = "Windwalker Monk @Mufflon12";
@@ -175,6 +177,7 @@ namespace HyperElk.Core
             CombatRoutine.AddProp("MouseoverInCombat", "Only Mouseover in combat", false, "Only Attack mouseover in combat to avoid stupid pulls", "Generic");
             CombatRoutine.AddProp("MotC", "Tiger Palm Mouseover", true, "Use Tiger Palm for mouseover Marc of the Crane Dot", "Class Specific");
 
+            CombatRoutine.AddProp("Hekili", "Hekili is enabled", false, "Should the rotation use Hekili recommendation", "Generic");
 
             //Spells
 
@@ -300,6 +303,22 @@ namespace HyperElk.Core
 
         public override void CombatPulse()
         {
+            if (HekiliEnabled)
+            {
+                if (API.retail_hekiliNextSpell.Contains("trinket"))
+                {
+                    API.CastSpell(API.retail_hekiliNextSpell);
+                    return;
+                }
+                if (API.retail_hekiliNextSpell != "null")
+                {
+                    if (API.CanCast(API.retail_hekiliNextSpell))
+                    {
+                        API.CastSpell(API.retail_hekiliNextSpell);
+                    }
+                    return;
+                }
+            }
             if (IsMouseover && MotC && API.CanCast(TigerPalm) && ChiDeficit >= 2 && !API.MacroIsIgnored(TigerPalm + "MO") && API.PlayerCanAttackMouseover && (!isMouseoverInCombat || API.MouseoverIsIncombat) && API.MouseoverDebuffRemainingTime(MarkoftheCrane) <= 100 && API.MouseoverRange <= 2 && !API.PlayerIsChanneling)
             {
                 API.CastSpell(TigerPalm + "MO");

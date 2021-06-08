@@ -10,7 +10,6 @@ namespace HyperElk.Core
         private int DeathStrikeProcLifePercent => percentListProp[CombatRoutine.GetPropertyInt(DeathStrike + "PROC")];
         private int DeathStrikeLifePercent => percentListProp[CombatRoutine.GetPropertyInt(DeathStrike)];
 
-
         private string HowlingBlast = "Howling Blast";
         private string FrostStrike = "Frost Strike";
         private string DeathStrike = "Death Strike";
@@ -86,6 +85,7 @@ namespace HyperElk.Core
         }
         private int CurrentRP => API.PlayerRunicPower;
         private bool UseDND => (bool)CombatRoutine.GetProperty("UseDND");
+        private bool HekiliEnabled => (bool)CombatRoutine.GetProperty("Hekili");
         private int PhialofSerenityLifePercent => percentListProp[CombatRoutine.GetPropertyInt(PhialofSerenity)];
         private int SpiritualHealingPotionLifePercent => percentListProp[CombatRoutine.GetPropertyInt(SpiritualHealingPotion)];
 
@@ -126,7 +126,8 @@ namespace HyperElk.Core
             CombatRoutine.AddSpell(Lichborne, 49039,"D1");
             CombatRoutine.AddSpell(SacrificialPact, 327574);
 
-
+            CombatRoutine.AddMacro("trinket1");
+            CombatRoutine.AddMacro("trinket2");
             //Conduit
 
             CombatRoutine.AddConduit(Everfrost);
@@ -148,6 +149,7 @@ namespace HyperElk.Core
 
             CombatRoutine.AddItem(PhialofSerenity, 177278);
             CombatRoutine.AddItem(SpiritualHealingPotion, 171267);
+            CombatRoutine.AddProp("Hekili", "Hekili is enabled", false, "Should the rotation use Hekili recommendation", "Generic");
             CombatRoutine.AddProp(PhialofSerenity, PhialofSerenity + " Life Percent", percentListProp, " Life percent at which" + PhialofSerenity + " is used, set to 0 to disable", "Defense", 4);
             CombatRoutine.AddProp(SpiritualHealingPotion, SpiritualHealingPotion + " Life Percent", percentListProp, " Life percent at which" + SpiritualHealingPotion + " is used, set to 0 to disable", "Defense", 4);
 
@@ -170,6 +172,24 @@ namespace HyperElk.Core
         {
             if (API.PlayerIsCasting(true))
                 return;
+
+            if (HekiliEnabled) { 
+                if (API.retail_hekiliNextSpell.Contains("trinket")) 
+                { 
+                    API.CastSpell(API.retail_hekiliNextSpell);
+                    return;
+                }
+                if (API.retail_hekiliNextSpell != "null" )
+                {
+                    if(API.CanCast(API.retail_hekiliNextSpell))
+                    {
+                        API.CastSpell(API.retail_hekiliNextSpell);
+                    }
+                    return;
+
+                }
+            }
+
             //DEF
             if (API.PlayerHealthPercent <= AntiMagicShellLifePercent && API.CanCast(AntiMagicShell))
             {
