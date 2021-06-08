@@ -334,7 +334,7 @@
                     return;
                 }
             }
-            if (IsMouseover && API.MouseoverHealthPercent > 0)
+            if (IsMouseover && API.MouseoverHealthPercent > 0 && API.MouseoverIsUnitIndex != 0 && API.MouseoverIsUnitIndex != 41 && !API.PlayerCanAttackMouseover)
             {
                 if (!API.MacroIsIgnored(LayOnHands + " MO") && API.MouseoverHealthPercent <= LayOnHandsMouseoverLifePercent && API.MouseoverRange <= 40 && API.CanCast(LayOnHands) && PlayerLevel >= 9 && !API.MouseoverHasDebuff(Forbearance, false, false))
                 {
