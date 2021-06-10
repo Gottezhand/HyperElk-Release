@@ -3,5 +3,6 @@ config.ini
 HyperElk.exe
 *.txt
 *.exe
+*.ini
 HyperElk.exe
 HyperElk.exe
