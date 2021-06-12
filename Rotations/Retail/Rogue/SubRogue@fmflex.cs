@@ -48,6 +48,13 @@ namespace HyperElk.Core
         private string nextCrit = "227151";
         private string LeadbyExample = "Lead by Example";
         private string Soulshape = "Soulshape";
+        private string WoundPoison = "Wound Poison";
+        private string NumbingPoison = "Numbing Poison";
+        private string CripplingPoison = "Crippling Poison";
+        private string InstantPoison = "Instant Poison";
+
+        private string Blind = "Blind";
+        private string KidneyShot = "Kidney Shot";
 
         private bool IsSmallCD => API.ToggleIsEnabled("SmallCD");
         private bool AutoStealth => API.ToggleIsEnabled("Auto Stealth");
@@ -79,7 +86,14 @@ namespace HyperElk.Core
 
 
         //Rotation Utilities
-
+        bool InstantPoisonLast => API.LastSpellCastInGame == InstantPoison || API.CurrentCastSpellID("player") == 315584;
+        bool WoundPoisonLast => API.LastSpellCastInGame == WoundPoison || API.CurrentCastSpellID("player") == 8679;
+        bool CripplingPoisonLast => API.LastSpellCastInGame == CripplingPoison || API.CurrentCastSpellID("player") == 3408;
+        bool NumbingPoisonLast => API.LastSpellCastInGame == NumbingPoison || API.CurrentCastSpellID("player") == 5761;
+        public string[] Poison1 = new string[] { "Not Used", "Instant Poison", "Wound Poison" };
+        public string[] Poison2 = new string[] { "Not Used", "Crippling Poison", "Numbing Poison" };
+        private string UsePoison1 => Poison1[CombatRoutine.GetPropertyInt("First Poison")];
+        private string UsePoison2 => Poison2[CombatRoutine.GetPropertyInt("Second Poison")];
         private bool isStealth => API.PlayerHasBuff(Stealth) || API.PlayerHasBuff(Vanish);
 
         int MaxEnergy => API.PlayeMaxEnergy;
@@ -108,6 +122,7 @@ namespace HyperElk.Core
         bool shadow_dance_ready => !API.SpellISOnCooldown(ShadowDance) && !API.PlayerHasBuff(Stealth, false, false);
 
         bool SerratedBoneSpikeThreshold => (API.SpellCharges(SerratedBoneSpike) + ((3000 - API.SpellChargeCD(SerratedBoneSpike)) / 3000)) >= 2.75;
+		public bool UseHekili => CombatRoutine.GetPropertyBool("Hekili");
         public override void Initialize()
         {
             CombatRoutine.Name = "Sub Rotation @FmFlex";
@@ -142,17 +157,25 @@ namespace HyperElk.Core
             CombatRoutine.AddSpell(Feint, 1966, "D1");
             CombatRoutine.AddSpell(Evasion, 5277, "D1");
 
+            CombatRoutine.AddSpell(Blind, 2094);
+            CombatRoutine.AddSpell(KidneyShot, 408);
+
             CombatRoutine.AddSpell(MarkedforDeath, 137619, "D1");
             CombatRoutine.AddSpell(GhostlyStrike, 196937, "D1");
             CombatRoutine.AddSpell(Gloomblade, 200758, "D1");
             CombatRoutine.AddSpell(SecretTechnique, 280719, "D1");
             CombatRoutine.AddSpell(ShurikenTornado, 277925);
             CombatRoutine.AddSpell(TricksoftheTrade, 57934);
-
+            CombatRoutine.AddSpell(CripplingPoison, 3408);
+            CombatRoutine.AddSpell(InstantPoison, 315584);
+            CombatRoutine.AddSpell(WoundPoison, 8679);
+            CombatRoutine.AddSpell(NumbingPoison, 5761);
             CombatRoutine.AddSpell(EchoingReprimand, 323547);
             CombatRoutine.AddSpell(SerratedBoneSpike, 328547);
             CombatRoutine.AddSpell(Flagellation, 323654);
             CombatRoutine.AddSpell(Sepsis, 328305);
+
+
             CombatRoutine.AddBuff(SliceandDice, 315496);
             CombatRoutine.AddBuff(ShadowDance, 185422);
             CombatRoutine.AddBuff(ShadowBlades, 121471);
@@ -171,6 +194,10 @@ namespace HyperElk.Core
             CombatRoutine.AddBuff(MasterofShadows, 196976);
             CombatRoutine.AddBuff(Soulshape, 310143);
             CombatRoutine.AddBuff(TricksoftheTrade, 59628);
+            CombatRoutine.AddBuff(WoundPoison, 8679);
+            CombatRoutine.AddBuff(NumbingPoison, 5761);
+            CombatRoutine.AddBuff(CripplingPoison, 3408);
+            CombatRoutine.AddBuff(InstantPoison, 315584);
 
             CombatRoutine.AddDebuff(Rupture, 1943);
             CombatRoutine.AddDebuff(FindWeakness, 316219);
@@ -179,7 +206,8 @@ namespace HyperElk.Core
 
             CombatRoutine.AddConduit(LeadbyExample);
 
-
+            CombatRoutine.AddMacro("trinket1");
+            CombatRoutine.AddMacro("trinket2");
             CombatRoutine.AddItem(PhialofSerenity, 177278);
             CombatRoutine.AddItem(SpiritualHealingPotion, 171267);
             //CB Properties
@@ -189,7 +217,9 @@ namespace HyperElk.Core
             CombatRoutine.AddProp(Feint, Feint + " Life Percent", percentListProp, "Life percent at which" + Feint + "is used, set to 0 to disable", "Defense", 2);
             CombatRoutine.AddProp(PhialofSerenity, PhialofSerenity + " Life Percent", percentListProp, " Life percent at which" + PhialofSerenity + " is used, set to 0 to disable", "Defense", 4);
             CombatRoutine.AddProp(SpiritualHealingPotion, SpiritualHealingPotion + " Life Percent", percentListProp, " Life percent at which" + SpiritualHealingPotion + " is used, set to 0 to disable", "Defense", 4);
-
+            CombatRoutine.AddProp("Hekili", "Use Hekili as rotation", false, " Will use the Hekili rotation. You need the addon activated and setup", "Generic");
+            CombatRoutine.AddProp("First Poison", "First Poison", Poison1, " Choose your first Poison", "Poisons", 0);
+            CombatRoutine.AddProp("Second Poison", "Second Poison", Poison2, " Choose your second Poison", "Poisons", 0);
             CombatRoutine.AddToggle("SmallCD");
             CombatRoutine.AddToggle("Auto Stealth");
         }
@@ -217,7 +247,16 @@ namespace HyperElk.Core
                     API.CastSpell(Kick);
                     return;
                 }
-
+                if (API.CanCast(KidneyShot) && isInterrupt && IsMelee && API.SpellISOnCooldown(Kick))
+                {
+                    API.CastSpell(KidneyShot);
+                    return;
+                }
+                if (API.CanCast(Blind) && isInterrupt && IsMelee && API.SpellISOnCooldown(Kick))
+                {
+                    API.CastSpell(Blind);
+                    return;
+                }
                 if (IsCooldowns && API.PlayerHealthPercent <= EvasionLifePercent && API.CanCast(Evasion))
                 {
                     API.CastSpell(Evasion);
@@ -243,222 +282,264 @@ namespace HyperElk.Core
                     API.CastSpell(TricksoftheTrade);
                     return;
                 }
-
-                //CDS
-
-                //cds->add_action(this, "Shadow Dance", "use_off_gcd=1,if=!buff.shadow_dance.up&buff.shuriken_tornado.up&buff.shuriken_tornado.remains<=3.5", "Use Dance off-gcd before the first Shuriken Storm from Tornado comes in.");
-                if (IsSmallCD && !(isStealth || API.PlayerHasBuff(Sepsis) || API.PlayerHasBuff(Subterfuge)) && IsMelee && API.CanCast(ShadowDance) && !API.PlayerHasBuff(ShadowDance) && API.PlayerHasBuff(ShurikenTornado) && API.PlayerBuffTimeRemaining(ShurikenTornado) <= 350)
+                if (API.CanCast(CripplingPoison) && UsePoison2 == "Crippling Poison" && API.PlayerBuffTimeRemaining(CripplingPoison) < 3000 && !API.PlayerIsMoving && !CripplingPoisonLast)
                 {
-                    API.CastSpell(ShadowDance);
-                }
-                //cds->add_action( this, "Symbols of Death", "use_off_gcd=1,if=buff.shuriken_tornado.up&buff.shuriken_tornado.remains<=3.5", "(Unless already up because we took Shadow Focus) use Symbols off-gcd before the first Shuriken Storm from Tornado comes in." );
-                if (IsSmallCD && API.CanCast(SymbolsofDeath) && IsMelee && API.PlayerHasBuff(ShurikenTornado) && API.PlayerBuffTimeRemaining(ShurikenTornado) <= 350)
-                {
-                    API.CastSpell(SymbolsofDeath);
-                }
-                //cds->add_action("flagellation,if=variable.snd_condition&!stealthed.mantle");
-                if (IsSmallCD && PlayerCovenantSettings == "Venthyr" && IsMelee && !API.TargetHasDebuff(Flagellation) && SnDCondition && !isStealth && API.CanCast(Flagellation) && IsMelee)
-                {
-                    API.CastSpell(Flagellation);
+                    API.CastSpell(CripplingPoison);
                     return;
                 }
-                //cds->add_action("flagellation_cleanse,if=debuff.flagellation.remains<2");
-                if (IsSmallCD && PlayerCovenantSettings == "Venthyr" && IsMelee && API.TargetHasDebuff(Flagellation) && API.TargetDebuffRemainingTime(Flagellation) < 200 && API.CanCast(Flagellation) && IsMelee)
+                if (API.CanCast(InstantPoison) && UsePoison1 == "Instant Poison" && API.PlayerBuffTimeRemaining(InstantPoison) < 3000 && !API.PlayerIsMoving && !InstantPoisonLast)
                 {
-                    API.CastSpell(Flagellation);
+                    API.CastSpell(InstantPoison);
                     return;
                 }
-                //cds->add_action(this, "Vanish", "if=(runeforge.mark_of_the_master_assassin&combo_points.deficit<=3|runeforge.deathly_shadows&combo_points<1)&buff.symbols_of_death.up&buff.shadow_dance.up&master_assassin_remains=0&buff.deathly_shadows.down");
-                //TODO
-
-
-                //cds->add_talent(this, "Shuriken Tornado", "if=energy>=60&variable.snd_condition&cooldown.symbols_of_death.up&cooldown.shadow_dance.charges>=1", "Use Tornado pre SoD when we have the energy whether from pooling without SF or just generally.");
-                if (IsSmallCD && IsAOE && TalentShurikenTornado && API.CanCast(ShurikenTornado) && IsMelee && API.PlayerEnergy >= 60 && SnDCondition && !API.SpellISOnCooldown(SymbolsofDeath) && API.SpellCharges(ShadowDance) >= 1)
+                if (API.CanCast(NumbingPoison) && UsePoison2 == "Numbing Poison" && API.PlayerBuffTimeRemaining(NumbingPoison) < 3000 && !API.PlayerIsMoving && !NumbingPoisonLast)
                 {
-                    API.CastSpell(ShurikenTornado);
+                    API.CastSpell(NumbingPoison);
                     return;
                 }
-                //cds->add_action("serrated_bone_spike,cycle_targets=1,if=variable.snd_condition&!dot.serrated_bone_spike_dot.ticking&target.time_to_die>=21|fight_remains<=5&spell_targets.shuriken_storm<3");
-                if (PlayerCovenantSettings == "Necroload" && IsMelee && API.CanCast(SerratedBoneSpike) && SnDCondition && !API.TargetHasDebuff(SerratedBoneSpike) && API.TargetTimeToDie > 2100)
+                if (API.CanCast(WoundPoison) && UsePoison1 == "Wound Poison" && API.PlayerBuffTimeRemaining(WoundPoison) < 3000 && !API.PlayerIsMoving && !WoundPoisonLast)
                 {
-                    API.CastSpell(SerratedBoneSpike);
+                    API.CastSpell(WoundPoison);
                     return;
                 }
-                //cds->add_action("sepsis,if=variable.snd_condition&combo_points.deficit>=1");
-                if (IsAOE && PlayerCovenantSettings == "Night Fae" && IsMelee && API.CanCast(Sepsis) && SnDCondition && ComboPointDeficit >= 1 && IsMelee)
+                if (UseHekili)
                 {
-                    API.CastSpell(Sepsis);
-                    return;
-                }
-                //cds->add_action(this, "Symbols of Death", "if=variable.snd_condition&(talent.enveloping_shadows.enabled|cooldown.shadow_dance.charges>=1)&(!talent.shuriken_tornado.enabled|talent.shadow_focus.enabled|cooldown.shuriken_tornado.remains>2)", "Use Symbols on cooldown (after first SnD) unless we are going to pop Tornado and do not have Shadow Focus.");
-
-                if (API.CanCast(SymbolsofDeath) && SnDCondition && IsMelee &&
-                (TalentEnvelopingShadows || API.SpellCharges(ShadowDance) >= 1) &&
-                (!TalentShurikenTornado || TalentShadowFocus || API.SpellCDDuration(ShurikenStorm) > 200))
-                {
-                    API.CastSpell(SymbolsofDeath);
-                    return;
-                }
-                //cds->add_talent(this, "Marked for Death", "target_if=min:target.time_to_die,if=raid_event.adds.up&(target.time_to_die<combo_points.deficit|!stealthed.all&combo_points.deficit>=cp_max_spend)", "If adds are up, snipe the one with lowest TTD. Use when dying faster than CP deficit or not stealthed without any CP.");
-                //cds->add_talent(this, "Marked for Death", "if=raid_event.adds.in>30-raid_event.adds.duration&combo_points.deficit>=cp_max_spend", "If no adds will die within the next 30s, use MfD on boss without any CP.");
-
-                if (IsSmallCD && TalentMarkedForDeath && ComboPointDeficit >= MaxComboPoints - 1 && API.CanCast(MarkedforDeath) && API.TargetRange <= 30)
-                {
-                    API.CastSpell(MarkedforDeath);
-                    return;
-                }
-
-                //cds->add_action(this, "Shadow Blades", "if=variable.snd_condition&combo_points.deficit>=2");
-                if (IsSmallCD && IsCooldowns && IsMelee && API.CanCast(ShadowBlades) && SnDCondition && ComboPointDeficit >= 2 && IsMelee)
-                {
-                    API.CastSpell(ShadowBlades);
-                    return;
-                }
-                //cds->add_action("echoing_reprimand,if=variable.snd_condition&combo_points.deficit>=2&(variable.use_priority_rotation|spell_targets.shuriken_storm<=4)");
-                if (IsSmallCD && PlayerCovenantSettings == "Kyrian" && IsMelee && API.CanCast(EchoingReprimand) && SnDCondition && ComboPointDeficit >= 2 && (API.PlayerUnitInMeleeRangeCount <= 4 || !IsAOE) && IsMelee)
-                {
-                    API.CastSpell(EchoingReprimand);
-                    return;
-                }
-                //cds->add_talent(this, "Shuriken Tornado", "if=talent.shadow_focus.enabled&variable.snd_condition&buff.symbols_of_death.up", "With SF, if not already done, use Tornado with SoD up.");
-
-                if (IsSmallCD && IsAOE && TalentShurikenTornado && IsMelee && TalentShadowFocus && API.CanCast(ShurikenTornado) && SnDCondition
-                    && API.PlayerHasBuff(SymbolsofDeath))
-                {
-                    API.CastSpell(ShurikenTornado);
-                    return;
-                }
-                //    cds->add_action( this, "Shadow Dance", "if=!buff.shadow_dance.up&fight_remains<=8+talent.subterfuge.enabled" );
-                if (IsSmallCD && IsCooldowns && API.TargetIsBoss && !(isStealth || API.PlayerHasBuff(Sepsis) || API.PlayerHasBuff(Subterfuge)) && API.CanCast(ShadowDance) && !API.PlayerHasBuff(ShadowDance) && API.TargetTimeToDie < 800 + (TalentSubterfuge ? 1 : 0))
-                {
-                    API.CastSpell(ShadowDance);
-                }
-
-                if ((isStealth || API.PlayerHasBuff(ShadowDance) || API.PlayerHasBuff(Sepsis) || API.PlayerHasBuff(Subterfuge)))
-                {
-                    //stealthed->add_action(this, "Shadowstrike", "if=(buff.stealth.up|buff.vanish.up)", "If Stealth/vanish are up, use Shadowstrike to benefit from the passive bonus and Find Weakness, even if we are at max CP (from the precombat MfD).");
-
-
-                    if (isStealth && API.TargetRange <= 25 && API.CanCast(Shadowstrike) && API.PlayerEnergy >= 40)
+                    if (IsMelee)
                     {
-                        API.CastSpell(Shadowstrike);
+                        if (API.retail_hekiliNextSpell.Contains("trinket"))
+                        {
+                            API.CastSpell(API.retail_hekiliNextSpell);
+                            return;
+                        }
+                        if (API.retail_hekiliNextSpell != "null")
+                        {
+                            if (API.CanCast(API.retail_hekiliNextSpell))
+                            {
+                                API.CastSpell(API.retail_hekiliNextSpell);
+                                return;
+                            }
+                        }
+                    }
+                }
+                if (!UseHekili)
+                {
+
+                    //CDS
+
+                    //cds->add_action(this, "Shadow Dance", "use_off_gcd=1,if=!buff.shadow_dance.up&buff.shuriken_tornado.up&buff.shuriken_tornado.remains<=3.5", "Use Dance off-gcd before the first Shuriken Storm from Tornado comes in.");
+                    if (IsSmallCD && !(isStealth || API.PlayerHasBuff(Sepsis) || API.PlayerHasBuff(Subterfuge)) && IsMelee && API.CanCast(ShadowDance) && !API.PlayerHasBuff(ShadowDance) && API.PlayerHasBuff(ShurikenTornado) && API.PlayerBuffTimeRemaining(ShurikenTornado) <= 350)
+                    {
+                        API.CastSpell(ShadowDance);
+                    }
+                    //cds->add_action( this, "Symbols of Death", "use_off_gcd=1,if=buff.shuriken_tornado.up&buff.shuriken_tornado.remains<=3.5", "(Unless already up because we took Shadow Focus) use Symbols off-gcd before the first Shuriken Storm from Tornado comes in." );
+                    if (IsSmallCD && API.CanCast(SymbolsofDeath) && IsMelee && API.PlayerHasBuff(ShurikenTornado) && API.PlayerBuffTimeRemaining(ShurikenTornado) <= 350)
+                    {
+                        API.CastSpell(SymbolsofDeath);
+                    }
+                    //cds->add_action("flagellation,if=variable.snd_condition&!stealthed.mantle");
+                    if (IsSmallCD && PlayerCovenantSettings == "Venthyr" && IsMelee && !API.TargetHasDebuff(Flagellation) && SnDCondition && !isStealth && API.CanCast(Flagellation) && IsMelee)
+                    {
+                        API.CastSpell(Flagellation);
                         return;
                     }
-                    //stealthed->add_action("call_action_list,name=finish,if=buff.shuriken_tornado.up&combo_points.deficit<=2", "Finish at 3+ CP without DS / 4+ with DS with Shuriken Tornado buff up to avoid some CP waste situations.");
+                    //cds->add_action("flagellation_cleanse,if=debuff.flagellation.remains<2");
+                    if (IsSmallCD && PlayerCovenantSettings == "Venthyr" && IsMelee && API.TargetHasDebuff(Flagellation) && API.TargetDebuffRemainingTime(Flagellation) < 200 && API.CanCast(Flagellation) && IsMelee)
+                    {
+                        API.CastSpell(Flagellation);
+                        return;
+                    }
+                    //cds->add_action(this, "Vanish", "if=(runeforge.mark_of_the_master_assassin&combo_points.deficit<=3|runeforge.deathly_shadows&combo_points<1)&buff.symbols_of_death.up&buff.shadow_dance.up&master_assassin_remains=0&buff.deathly_shadows.down");
+                    //TODO
 
-                    if (IsAOE && API.PlayerHasBuff(ShurikenTornado) && ComboPointDeficit <= 2)
+
+                    //cds->add_talent(this, "Shuriken Tornado", "if=energy>=60&variable.snd_condition&cooldown.symbols_of_death.up&cooldown.shadow_dance.charges>=1", "Use Tornado pre SoD when we have the energy whether from pooling without SF or just generally.");
+                    if (IsSmallCD && IsAOE && TalentShurikenTornado && API.CanCast(ShurikenTornado) && IsMelee && API.PlayerEnergy >= 60 && SnDCondition && !API.SpellISOnCooldown(SymbolsofDeath) && API.SpellCharges(ShadowDance) >= 1)
+                    {
+                        API.CastSpell(ShurikenTornado);
+                        return;
+                    }
+                    //cds->add_action("serrated_bone_spike,cycle_targets=1,if=variable.snd_condition&!dot.serrated_bone_spike_dot.ticking&target.time_to_die>=21|fight_remains<=5&spell_targets.shuriken_storm<3");
+                    if (PlayerCovenantSettings == "Necroload" && IsMelee && API.CanCast(SerratedBoneSpike) && SnDCondition && !API.TargetHasDebuff(SerratedBoneSpike) && API.TargetTimeToDie > 2100)
+                    {
+                        API.CastSpell(SerratedBoneSpike);
+                        return;
+                    }
+                    //cds->add_action("sepsis,if=variable.snd_condition&combo_points.deficit>=1");
+                    if (IsAOE && PlayerCovenantSettings == "Night Fae" && IsMelee && API.CanCast(Sepsis) && SnDCondition && ComboPointDeficit >= 1 && IsMelee)
+                    {
+                        API.CastSpell(Sepsis);
+                        return;
+                    }
+                    //cds->add_action(this, "Symbols of Death", "if=variable.snd_condition&(talent.enveloping_shadows.enabled|cooldown.shadow_dance.charges>=1)&(!talent.shuriken_tornado.enabled|talent.shadow_focus.enabled|cooldown.shuriken_tornado.remains>2)", "Use Symbols on cooldown (after first SnD) unless we are going to pop Tornado and do not have Shadow Focus.");
+
+                    if (API.CanCast(SymbolsofDeath) && SnDCondition && IsMelee &&
+                    (TalentEnvelopingShadows || API.SpellCharges(ShadowDance) >= 1) &&
+                    (!TalentShurikenTornado || TalentShadowFocus || API.SpellCDDuration(ShurikenStorm) > 200))
+                    {
+                        API.CastSpell(SymbolsofDeath);
+                        return;
+                    }
+                    //cds->add_talent(this, "Marked for Death", "target_if=min:target.time_to_die,if=raid_event.adds.up&(target.time_to_die<combo_points.deficit|!stealthed.all&combo_points.deficit>=cp_max_spend)", "If adds are up, snipe the one with lowest TTD. Use when dying faster than CP deficit or not stealthed without any CP.");
+                    //cds->add_talent(this, "Marked for Death", "if=raid_event.adds.in>30-raid_event.adds.duration&combo_points.deficit>=cp_max_spend", "If no adds will die within the next 30s, use MfD on boss without any CP.");
+
+                    if (IsSmallCD && TalentMarkedForDeath && ComboPointDeficit >= MaxComboPoints - 1 && API.CanCast(MarkedforDeath) && API.TargetRange <= 30)
+                    {
+                        API.CastSpell(MarkedforDeath);
+                        return;
+                    }
+
+                    //cds->add_action(this, "Shadow Blades", "if=variable.snd_condition&combo_points.deficit>=2");
+                    if (IsSmallCD && IsCooldowns && IsMelee && API.CanCast(ShadowBlades) && SnDCondition && ComboPointDeficit >= 2 && IsMelee)
+                    {
+                        API.CastSpell(ShadowBlades);
+                        return;
+                    }
+                    //cds->add_action("echoing_reprimand,if=variable.snd_condition&combo_points.deficit>=2&(variable.use_priority_rotation|spell_targets.shuriken_storm<=4)");
+                    if (IsSmallCD && PlayerCovenantSettings == "Kyrian" && IsMelee && API.CanCast(EchoingReprimand) && SnDCondition && ComboPointDeficit >= 2 && (API.PlayerUnitInMeleeRangeCount <= 4 || !IsAOE) && IsMelee)
+                    {
+                        API.CastSpell(EchoingReprimand);
+                        return;
+                    }
+                    //cds->add_talent(this, "Shuriken Tornado", "if=talent.shadow_focus.enabled&variable.snd_condition&buff.symbols_of_death.up", "With SF, if not already done, use Tornado with SoD up.");
+
+                    if (IsSmallCD && IsAOE && TalentShurikenTornado && IsMelee && TalentShadowFocus && API.CanCast(ShurikenTornado) && SnDCondition
+                        && API.PlayerHasBuff(SymbolsofDeath))
+                    {
+                        API.CastSpell(ShurikenTornado);
+                        return;
+                    }
+                    //    cds->add_action( this, "Shadow Dance", "if=!buff.shadow_dance.up&fight_remains<=8+talent.subterfuge.enabled" );
+                    if (IsSmallCD && IsCooldowns && API.TargetIsBoss && !(isStealth || API.PlayerHasBuff(Sepsis) || API.PlayerHasBuff(Subterfuge)) && API.CanCast(ShadowDance) && !API.PlayerHasBuff(ShadowDance) && API.TargetTimeToDie < 800 + (TalentSubterfuge ? 1 : 0))
+                    {
+                        API.CastSpell(ShadowDance);
+                    }
+
+                    if ((isStealth || API.PlayerHasBuff(ShadowDance) || API.PlayerHasBuff(Sepsis) || API.PlayerHasBuff(Subterfuge)))
+                    {
+                        //stealthed->add_action(this, "Shadowstrike", "if=(buff.stealth.up|buff.vanish.up)", "If Stealth/vanish are up, use Shadowstrike to benefit from the passive bonus and Find Weakness, even if we are at max CP (from the precombat MfD).");
+
+
+                        if (isStealth && API.TargetRange <= 25 && API.CanCast(Shadowstrike) && API.PlayerEnergy >= 40)
+                        {
+                            API.CastSpell(Shadowstrike);
+                            return;
+                        }
+                        //stealthed->add_action("call_action_list,name=finish,if=buff.shuriken_tornado.up&combo_points.deficit<=2", "Finish at 3+ CP without DS / 4+ with DS with Shuriken Tornado buff up to avoid some CP waste situations.");
+
+                        if (IsAOE && API.PlayerHasBuff(ShurikenTornado) && ComboPointDeficit <= 2)
+                        {
+                            Finisher();
+                            return;
+                        }
+                        // stealthed->add_action("call_action_list,name=finish,if=spell_targets.shuriken_storm>=4&combo_points>=4", "Also safe to finish at 4+ CP with exactly 4 targets. (Same as outside stealth.)");
+
+                        if (IsAOE && API.PlayerUnitInMeleeRangeCount >= 4 && API.PlayerComboPoints >= 4)
+                        {
+                            Finisher();
+                            return;
+                        }
+                        // stealthed->add_action("call_action_list,name=finish,if=combo_points.deficit<=1-(talent.deeper_stratagem.enabled&buff.vanish.up)", "Finish at 4+ CP without DS, 5+ with DS, and 6 with DS after Vanish");
+
+                        if (ComboPointDeficit <= 1 - ((TalentDeeperStratagem && API.PlayerHasBuff(Vanish)) ? 1 : 0))
+                        {
+                            Finisher();
+                            return;
+                        }
+                        // stealthed->add_action(this, "Shiv", "if=talent.nightstalker.enabled&runeforge.tiny_toxic_blade&spell_targets.shuriken_storm<5");
+                        //TODO
+
+                        //stealthed->add_action(this, "Shadowstrike", "cycle_targets=1,if=debuff.find_weakness.remains<1&spell_targets.shuriken_storm<=3&target.time_to_die-remains>6", "Up to 3 targets keep up Find Weakness by cycling Shadowstrike.");
+                        if (IsAOE && API.CanCast(Shadowstrike) && API.TargetRange <= 25 && API.TargetDebuffRemainingTime(FindWeakness) < 100 && API.PlayerUnitInMeleeRangeCount <= 3)
+                        {
+                            API.CastSpell(Shadowstrike);
+                            return;
+                        }
+
+                        //stealthed->add_action(this, "Shadowstrike", "if=variable.use_priority_rotation&(debuff.find_weakness.remains<1|talent.weaponmaster.enabled&spell_targets.shuriken_storm<=4)", "For priority rotation, use Shadowstrike over Storm with WM against up to 4 targets or if FW is running off (on any amount of targets)");
+
+                        //TODO
+
+                        //stealthed->add_action( this, "Shuriken Storm", "if=spell_targets>=3+(buff.the_rotten.up|runeforge.akaaris_soul_fragment&conduit.deeper_daggers.rank>=7)&(buff.symbols_of_death_autocrit.up|!buff.premeditation.up|spell_targets>=5)" );
+                        //TOPTI
+                        if (IsAOE && IsMelee && API.CanCast(ShurikenStorm) && API.PlayerUnitInMeleeRangeCount >= 3 + (API.PlayerHasBuff(TheRotten) ? 1 : 0) && (API.PlayerHasBuff(nextCrit) || !API.PlayerHasBuff(Premeditation) || API.PlayerUnitInMeleeRangeCount >= 5))
+                        {
+                            API.CastSpell(ShurikenStorm);
+                            return;
+                        }
+                        //stealthed->add_action(this, "Shadowstrike", "if=debuff.find_weakness.remains<=1|cooldown.symbols_of_death.remains<18&debuff.find_weakness.remains<cooldown.symbols_of_death.remains", "Shadowstrike to refresh Find Weakness and to ensure we can carry over a full FW into the next SoD if possible.");
+                        if (API.CanCast(Shadowstrike) && API.TargetRange <= 25 && (API.TargetDebuffRemainingTime(FindWeakness) <= 100) || (API.SpellCDDuration(SymbolsofDeath) < 1800 && API.TargetDebuffRemainingTime(FindWeakness) < API.SpellCDDuration(SymbolsofDeath)))
+                        {
+                            API.CastSpell(Shadowstrike);
+                            return;
+                        }
+                        //stealthed->add_talent(this, "Gloomblade", "if=buff.perforated_veins.stack>=5&conduit.perforated_veins.rank>=13");
+
+                        // stealthed->add_action(this, "Shadowstrike");
+                        if (API.CanCast(Shadowstrike) && API.TargetRange <= 25)
+                        {
+                            API.CastSpell(Shadowstrike);
+                            return;
+                        }
+                    }
+
+                    if (API.PlayeMaxEnergy - API.PlayerEnergy <= StealthThreshold)
+                    {
+                        //stealth_cds->add_action(this, "Vanish", "if=(!variable.shd_threshold|!talent.nightstalker.enabled&talent.dark_shadow.enabled)&combo_points.deficit>1&!runeforge.mark_of_the_master_assassin", "Vanish if we are capping on Dance charges. Early before first dance if we have no Nightstalker but Dark Shadow in order to get Rupture up (no Master Assassin).");
+                        //TODO
+
+                        //stealth_cds->add_action("pool_resource,for_next=1,extra_amount=40,if=race.night_elf", "Pool for Shadowmeld + Shadowstrike unless we are about to cap on Dance charges. Only when Find Weakness is about to run out.");
+                        //stealth_cds->add_action("shadowmeld,if=energy>=40&energy.deficit>=10&!variable.shd_threshold&combo_points.deficit>1&debuff.find_weakness.remains<1");
+                        //TODO
+
+                        //stealth_cds->add_action("variable,name=shd_combo_points,value=combo_points.deficit>=2+buff.shadow_blades.up", "CP thresholds for entering Shadow Dance");
+                        //stealth_cds->add_action("variable,name=shd_combo_points,value=combo_points.deficit>=3,if=covenant.kyrian");
+                        //stealth_cds->add_action("variable,name=shd_combo_points,value=combo_points.deficit<=1,if=variable.use_priority_rotation&spell_targets.shuriken_storm>=4");
+                        //stealth_cds->add_action(this, "Shadow Dance", "if=variable.shd_combo_points&
+                        //(variable.shd_threshold|buff.symbols_of_death.remains>=1.2|spell_targets.shuriken_storm>=4&cooldown.symbols_of_death.remains>10)", "Dance during Symbols or above threshold.");
+                        if (IsSmallCD && !(isStealth || API.PlayerHasBuff(Sepsis) || API.PlayerHasBuff(Subterfuge)) && IsMelee && API.CanCast(ShadowDance) && !API.PlayerHasBuff(ShadowDance) && shd_combo_points
+                            && (shdThreshold || API.PlayerBuffTimeRemaining(SymbolsofDeath) >= 120 || (IsAOE && API.PlayerUnitInMeleeRangeCount >= 4 && API.SpellCDDuration(SymbolsofDeath) >= 1000)))
+                        {
+                            API.CastSpell(ShadowDance);
+                        }
+                        //stealth_cds->add_action(this, "Shadow Dance", "if=variable.shd_combo_points&fight_remains<cooldown.symbols_of_death.remains", "Burn remaining Dances before the fight ends if SoD won't be ready in time.");
+                        if (IsSmallCD && IsCooldowns && !(isStealth || API.PlayerHasBuff(Sepsis) || API.PlayerHasBuff(Subterfuge)) && IsMelee && API.TargetIsBoss && API.CanCast(ShadowDance) && !API.PlayerHasBuff(ShadowDance) && shd_combo_points
+                             && API.TargetTimeToDie < API.SpellCDDuration(SymbolsofDeath))
+                        {
+                            API.CastSpell(ShadowDance);
+                        }
+                    }
+
+
+                    if ((API.PlayerUnitInMeleeRangeCount < 6 || !IsAOE) && API.PlayerEnergy >= 25 && API.CanCast(SliceandDice) && API.PlayerBuffTimeRemaining(SliceandDice) < API.SpellGCDTotalDuration && API.PlayerComboPoints >= 4 - (API.PlayerTimeInCombat < 1000 ? 1 : 0) * 2)
+                    {
+                        API.CastSpell(SliceandDice);
+                        return;
+                    }
+                    //def->add_action( "call_action_list,name=finish,if=combo_points=animacharged_cp" );
+                    if (PlayerCovenantSettings == "Kyrian" && API.PlayerBuffStacks(EchoingReprimand) == API.PlayerComboPoints)
                     {
                         Finisher();
                         return;
                     }
-                    // stealthed->add_action("call_action_list,name=finish,if=spell_targets.shuriken_storm>=4&combo_points>=4", "Also safe to finish at 4+ CP with exactly 4 targets. (Same as outside stealth.)");
+                    //def->add_action("call_action_list,name=finish,if=combo_points.deficit<=1|fight_remains<=1&combo_points>=3|buff.symbols_of_death_autocrit.up&combo_points>=4", "Finish at 4+ without DS or with SoD crit buff, 5+ with DS (outside stealth)");
 
-                    if (IsAOE && API.PlayerUnitInMeleeRangeCount >= 4 && API.PlayerComboPoints >= 4)
+                    if (IsAOE && ComboPointDeficit <= 1 || (API.PlayerHasBuff(nextCrit) && API.PlayerComboPoints >= 4))
                     {
                         Finisher();
                         return;
                     }
-                    // stealthed->add_action("call_action_list,name=finish,if=combo_points.deficit<=1-(talent.deeper_stratagem.enabled&buff.vanish.up)", "Finish at 4+ CP without DS, 5+ with DS, and 6 with DS after Vanish");
-
+                    //def->add_action( "call_action_list,name=finish,if=spell_targets.shuriken_storm>=4&combo_points>=4", "With DS also finish at 4+ against 4 targets (outside stealth)" );
                     if (ComboPointDeficit <= 1 - ((TalentDeeperStratagem && API.PlayerHasBuff(Vanish)) ? 1 : 0))
                     {
                         Finisher();
                         return;
                     }
-                    // stealthed->add_action(this, "Shiv", "if=talent.nightstalker.enabled&runeforge.tiny_toxic_blade&spell_targets.shuriken_storm<5");
-                    //TODO
 
-                    //stealthed->add_action(this, "Shadowstrike", "cycle_targets=1,if=debuff.find_weakness.remains<1&spell_targets.shuriken_storm<=3&target.time_to_die-remains>6", "Up to 3 targets keep up Find Weakness by cycling Shadowstrike.");
-                    if (IsAOE && API.CanCast(Shadowstrike) && API.TargetRange <= 25 &&  API.TargetDebuffRemainingTime(FindWeakness) < 100 && API.PlayerUnitInMeleeRangeCount <= 3)
+                    if (API.PlayeMaxEnergy - API.PlayerEnergy <= StealthThreshold)
                     {
-                        API.CastSpell(Shadowstrike);
+                        Builder();
                         return;
                     }
-
-                    //stealthed->add_action(this, "Shadowstrike", "if=variable.use_priority_rotation&(debuff.find_weakness.remains<1|talent.weaponmaster.enabled&spell_targets.shuriken_storm<=4)", "For priority rotation, use Shadowstrike over Storm with WM against up to 4 targets or if FW is running off (on any amount of targets)");
-
-                    //TODO
-
-                    //stealthed->add_action( this, "Shuriken Storm", "if=spell_targets>=3+(buff.the_rotten.up|runeforge.akaaris_soul_fragment&conduit.deeper_daggers.rank>=7)&(buff.symbols_of_death_autocrit.up|!buff.premeditation.up|spell_targets>=5)" );
-                    //TOPTI
-                    if (IsAOE && IsMelee && API.CanCast(ShurikenStorm) && API.PlayerUnitInMeleeRangeCount >= 3 + (API.PlayerHasBuff(TheRotten) ? 1 : 0) && (API.PlayerHasBuff(nextCrit) || !API.PlayerHasBuff(Premeditation) || API.PlayerUnitInMeleeRangeCount >= 5))
-                    {
-                        API.CastSpell(ShurikenStorm);
-                        return;
-                    }
-                    //stealthed->add_action(this, "Shadowstrike", "if=debuff.find_weakness.remains<=1|cooldown.symbols_of_death.remains<18&debuff.find_weakness.remains<cooldown.symbols_of_death.remains", "Shadowstrike to refresh Find Weakness and to ensure we can carry over a full FW into the next SoD if possible.");
-                    if (API.CanCast(Shadowstrike) && API.TargetRange <= 25 && (API.TargetDebuffRemainingTime(FindWeakness) <= 100) ||( API.SpellCDDuration(SymbolsofDeath) < 1800 && API.TargetDebuffRemainingTime(FindWeakness) < API.SpellCDDuration(SymbolsofDeath)))
-                    {
-                        API.CastSpell(Shadowstrike);
-                        return;
-                    }
-                    //stealthed->add_talent(this, "Gloomblade", "if=buff.perforated_veins.stack>=5&conduit.perforated_veins.rank>=13");
-
-                    // stealthed->add_action(this, "Shadowstrike");
-                    if (API.CanCast(Shadowstrike) && API.TargetRange <= 25)
-                    {
-                        API.CastSpell(Shadowstrike);
-                        return;
-                    }
-                }
-
-                if (API.PlayeMaxEnergy - API.PlayerEnergy <= StealthThreshold)
-                {
-                    //stealth_cds->add_action(this, "Vanish", "if=(!variable.shd_threshold|!talent.nightstalker.enabled&talent.dark_shadow.enabled)&combo_points.deficit>1&!runeforge.mark_of_the_master_assassin", "Vanish if we are capping on Dance charges. Early before first dance if we have no Nightstalker but Dark Shadow in order to get Rupture up (no Master Assassin).");
-                    //TODO
-
-                    //stealth_cds->add_action("pool_resource,for_next=1,extra_amount=40,if=race.night_elf", "Pool for Shadowmeld + Shadowstrike unless we are about to cap on Dance charges. Only when Find Weakness is about to run out.");
-                    //stealth_cds->add_action("shadowmeld,if=energy>=40&energy.deficit>=10&!variable.shd_threshold&combo_points.deficit>1&debuff.find_weakness.remains<1");
-                    //TODO
-
-                    //stealth_cds->add_action("variable,name=shd_combo_points,value=combo_points.deficit>=2+buff.shadow_blades.up", "CP thresholds for entering Shadow Dance");
-                    //stealth_cds->add_action("variable,name=shd_combo_points,value=combo_points.deficit>=3,if=covenant.kyrian");
-                    //stealth_cds->add_action("variable,name=shd_combo_points,value=combo_points.deficit<=1,if=variable.use_priority_rotation&spell_targets.shuriken_storm>=4");
-                    //stealth_cds->add_action(this, "Shadow Dance", "if=variable.shd_combo_points&
-                    //(variable.shd_threshold|buff.symbols_of_death.remains>=1.2|spell_targets.shuriken_storm>=4&cooldown.symbols_of_death.remains>10)", "Dance during Symbols or above threshold.");
-                    if (IsSmallCD && !(isStealth || API.PlayerHasBuff(Sepsis) || API.PlayerHasBuff(Subterfuge)) && IsMelee && API.CanCast(ShadowDance) && !API.PlayerHasBuff(ShadowDance) && shd_combo_points
-                        && (shdThreshold || API.PlayerBuffTimeRemaining(SymbolsofDeath) >= 120 || (IsAOE && API.PlayerUnitInMeleeRangeCount >= 4 && API.SpellCDDuration(SymbolsofDeath) >= 1000)))
-                    {
-                        API.CastSpell(ShadowDance);
-                    }
-                    //stealth_cds->add_action(this, "Shadow Dance", "if=variable.shd_combo_points&fight_remains<cooldown.symbols_of_death.remains", "Burn remaining Dances before the fight ends if SoD won't be ready in time.");
-                    if (IsSmallCD && IsCooldowns && !(isStealth || API.PlayerHasBuff(Sepsis) || API.PlayerHasBuff(Subterfuge)) && IsMelee && API.TargetIsBoss && API.CanCast(ShadowDance) && !API.PlayerHasBuff(ShadowDance) && shd_combo_points
-                         && API.TargetTimeToDie < API.SpellCDDuration(SymbolsofDeath))
-                    {
-                        API.CastSpell(ShadowDance);
-                    }
-                }
-
-
-                if ((API.PlayerUnitInMeleeRangeCount < 6 || !IsAOE) && API.PlayerEnergy >= 25 && API.CanCast(SliceandDice) && API.PlayerBuffTimeRemaining(SliceandDice) < API.SpellGCDTotalDuration && API.PlayerComboPoints >= 4 - (API.PlayerTimeInCombat < 1000 ? 1 : 0) * 2)
-                {
-                    API.CastSpell(SliceandDice);
-                    return;
-                }
-                //def->add_action( "call_action_list,name=finish,if=combo_points=animacharged_cp" );
-                if (PlayerCovenantSettings == "Kyrian" && API.PlayerBuffStacks(EchoingReprimand) == API.PlayerComboPoints)
-                {
-                    Finisher();
-                    return;
-                }
-                //def->add_action("call_action_list,name=finish,if=combo_points.deficit<=1|fight_remains<=1&combo_points>=3|buff.symbols_of_death_autocrit.up&combo_points>=4", "Finish at 4+ without DS or with SoD crit buff, 5+ with DS (outside stealth)");
-
-                if (IsAOE && ComboPointDeficit <= 1 || (API.PlayerHasBuff(nextCrit) && API.PlayerComboPoints >= 4))
-                {
-                    Finisher();
-                    return;
-                }
-                //def->add_action( "call_action_list,name=finish,if=spell_targets.shuriken_storm>=4&combo_points>=4", "With DS also finish at 4+ against 4 targets (outside stealth)" );
-                if (ComboPointDeficit <= 1 - ((TalentDeeperStratagem && API.PlayerHasBuff(Vanish)) ? 1 : 0))
-                {
-                    Finisher();
-                    return;
-                }
-
-                if (API.PlayeMaxEnergy - API.PlayerEnergy <= StealthThreshold)
-                {
-                    Builder();
-                    return;
                 }
             }
         }
@@ -468,6 +549,26 @@ namespace HyperElk.Core
             if (AutoStealth && !isStealth && !API.PlayerHasBuff(ShadowDance) && !API.PlayerHasBuff(Soulshape) && API.CanCast(Stealth) && !API.PlayerIsCasting())
             {
                 API.CastSpell(Stealth);
+                return;
+            }
+            if (API.CanCast(CripplingPoison) && UsePoison2 == "Crippling Poison" && API.PlayerBuffTimeRemaining(CripplingPoison) < 30000 && !API.PlayerIsMoving && !CripplingPoisonLast)
+            {
+                API.CastSpell(CripplingPoison);
+                return;
+            }
+            if (API.CanCast(InstantPoison) && UsePoison1 == "Instant Poison" && API.PlayerBuffTimeRemaining(InstantPoison) < 30000 && !API.PlayerIsMoving && !InstantPoisonLast)
+            {
+                API.CastSpell(InstantPoison);
+                return;
+            }
+            if (API.CanCast(NumbingPoison) && UsePoison2 == "Numbing Poison" && API.PlayerBuffTimeRemaining(NumbingPoison) < 30000 && !API.PlayerIsMoving && !NumbingPoisonLast)
+            {
+                API.CastSpell(NumbingPoison);
+                return;
+            }
+            if (API.CanCast(WoundPoison) && UsePoison1 == "Wound Poison" && API.PlayerBuffTimeRemaining(WoundPoison) < 30000 && !API.PlayerIsMoving && !WoundPoisonLast)
+            {
+                API.CastSpell(WoundPoison);
                 return;
             }
         }
