@@ -134,7 +134,7 @@ namespace HyperElk.Core
             CombatRoutine.AddConduit(EradicatingBlow);
             CombatRoutine.AddConduit(UnleashedFrenzy);
 
-            CombatRoutine.AddBuff(ColdHeart, 281208);
+            CombatRoutine.AddBuff(ColdHeart, 281209);
             CombatRoutine.AddBuff(DarkSuccor, 178819);
             CombatRoutine.AddBuff(Rime, 59052);
             CombatRoutine.AddBuff(KillingMachine, 51128);
