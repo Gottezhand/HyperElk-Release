@@ -231,7 +231,7 @@ namespace HyperElk.Core
 
             //COVE
             //covenants->add_action("deaths_due,if=raid_event.adds.in>15|!raid_event.adds.exists|active_enemies>=2", "Covenant Abilities");
-            if (PlayerCovenantSettings == "Night Fae" && API.CanCast(DeathsDue) && API.PlayerUnitInMeleeRangeCount > AOEUnitNumber && IsAOE && CurrentRune >= 1 && IsMelee && CurrentRP > 10)
+            if (PlayerCovenantSettings == "Night Fae" && API.CanCast(DeathsDue) && API.PlayerUnitInMeleeRangeCount >= AOEUnitNumber && IsAOE && CurrentRune >= 1 && IsMelee && CurrentRP > 10)
             {
                 API.CastSpell(DeathsDue);
                 return;
