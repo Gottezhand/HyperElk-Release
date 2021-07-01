@@ -117,7 +117,7 @@ namespace HyperElk.Core
 
 
             CombatRoutine.AddSpell(SwarmingMist, 311648, "NumPad2");
-            CombatRoutine.AddSpell(DeathsDue,315442);
+            CombatRoutine.AddSpell(DeathsDue, 324128);
             CombatRoutine.AddSpell(AbominationLimb, 315443);
             CombatRoutine.AddSpell(ShackletheUnworthy, 312202);
 
@@ -134,7 +134,7 @@ namespace HyperElk.Core
             CombatRoutine.AddConduit(EradicatingBlow);
             CombatRoutine.AddConduit(UnleashedFrenzy);
 
-            CombatRoutine.AddBuff(ColdHeart, 281208);
+            CombatRoutine.AddBuff(ColdHeart, 281209);
             CombatRoutine.AddBuff(DarkSuccor, 178819);
             CombatRoutine.AddBuff(Rime, 59052);
             CombatRoutine.AddBuff(KillingMachine, 51128);
@@ -144,7 +144,7 @@ namespace HyperElk.Core
             CombatRoutine.AddBuff(EradicatingBlow, 181943);
             CombatRoutine.AddBuff(UnleashedFrenzy, 182201);
 
-            CombatRoutine.AddDebuff(FrostFever, 49184);
+            CombatRoutine.AddDebuff(FrostFever, 55095);
 
 
             CombatRoutine.AddItem(PhialofSerenity, 177278);
@@ -231,7 +231,7 @@ namespace HyperElk.Core
 
             //COVE
             //covenants->add_action("deaths_due,if=raid_event.adds.in>15|!raid_event.adds.exists|active_enemies>=2", "Covenant Abilities");
-            if (PlayerCovenantSettings == "Night Fae" && API.CanCast(DeathsDue) && API.PlayerUnitInMeleeRangeCount > AOEUnitNumber && CurrentRune >= 1 && IsMelee && CurrentRP > 10)
+            if (PlayerCovenantSettings == "Night Fae" && API.CanCast(DeathsDue) && API.PlayerUnitInMeleeRangeCount >= AOEUnitNumber && IsAOE && CurrentRune >= 1 && IsMelee && CurrentRP > 10)
             {
                 API.CastSpell(DeathsDue);
                 return;
@@ -544,7 +544,7 @@ namespace HyperElk.Core
                     return;
                 }
                 // obliteration->add_action(this, "Howling Blast", "if=!dot.frost_fever.ticking&!buff.killing_machine.up");
-                if (!API.TargetHasDebuff(FrostFever, false, false) && !API.PlayerHasBuff(KillingMachine) && API.CanCast(HowlingBlast) && API.TargetRange <= 30)
+                if (!API.TargetHasDebuff(FrostFever, true, false) && !API.PlayerHasBuff(KillingMachine) && API.CanCast(HowlingBlast) && API.TargetRange <= 30)
                 {
                     API.CastSpell(HowlingBlast);
                     return;
