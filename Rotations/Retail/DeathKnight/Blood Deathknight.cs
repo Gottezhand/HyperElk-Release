@@ -72,10 +72,12 @@ namespace HyperElk.Core
         private int PhialofSerenityLifePercent => percentListProp[CombatRoutine.GetPropertyInt(PhialofSerenity)];
         private int SpiritualHealingPotionLifePercent => percentListProp[CombatRoutine.GetPropertyInt(SpiritualHealingPotion)];
 
+        private bool HekiliEnabled => (bool)CombatRoutine.GetProperty("Hekili");
+
         public override void Initialize()
         {
             CombatRoutine.Name = "Blood DK @Mufflon12";
-            API.WriteLog("Welcome to Blood DK rotation @ Mufflon12");
+            API.WriteLog("Welcome to Blood DK rotation @ Fmflex");
             API.WriteLog("DnD Macro to be use : /cast [@player] Death and Decay");
             API.WriteLog("Anti-Magic Zone Macro to be use : /cast [@player] Anti-Magic Zone");
 
@@ -94,7 +96,7 @@ namespace HyperElk.Core
 
             CombatRoutine.AddProp("Trinket1", "Trinket1 usage", CDUsage, "When should trinket1 be used", "Trinket", 0);
             CombatRoutine.AddProp("Trinket2", "Trinket2 usage", CDUsage, "When should trinket1 be used", "Trinket", 0);
-
+            CombatRoutine.AddProp("Hekili", "Hekili is enabled", false, "Should the rotation use Hekili recommendation", "Generic");
 
 
             CombatRoutine.AddSpell("Marrowrend", 195182, "D1");
@@ -133,7 +135,8 @@ namespace HyperElk.Core
             CombatRoutine.AddBuff(DancingRuneWeapon, 81256);
             CombatRoutine.AddBuff("Haemostasis", 235559);
             CombatRoutine.AddBuff("Blood Shield", 77535);
-            CombatRoutine.AddBuff(BloodforBlood);
+            CombatRoutine.AddBuff(BloodforBlood, 233411);
+            CombatRoutine.AddBuff(RuneTap, 194679);
 
 
             CombatRoutine.AddDebuff("Blood Plague", 55078);
@@ -156,6 +159,26 @@ namespace HyperElk.Core
         {
             if (!API.PlayerIsCasting() && !API.PlayerSpellonCursor)
             {
+                if (API.PlayerIsCasting(true))
+                    return;
+
+                if (HekiliEnabled)
+                {
+                    if (API.retail_hekiliNextSpell.Contains("trinket"))
+                    {
+                        API.CastSpell(API.retail_hekiliNextSpell);
+                        return;
+                    }
+                    if (API.retail_hekiliNextSpell != "null")
+                    {
+                        if (API.CanCast(API.retail_hekiliNextSpell))
+                        {
+                            API.CastSpell(API.retail_hekiliNextSpell);
+                        }
+                        return;
+
+                    }
+                }
                 //KICK
                 if (isInterrupt && API.CanCast(MindFreeze) && IsMelee && PlayerLevel >= 7)
                 {
@@ -223,13 +246,13 @@ namespace HyperElk.Core
                         return;
                     }
                     //Rune Tap 1st charge
-                    if (API.CanCast(RuneTap) && API.SpellCharges(RuneTap) >= 2 && API.PlayerHealthPercent <= RuneTap1PercentLife && PlayerLevel >= 19)
+                    if (API.CanCast(RuneTap) && ( API.SpellCharges(RuneTap) >= 2 || (API.SpellCharges(RuneTap) >= 2 && API.SpellChargeCD(RuneTap) <= 500)) && API.PlayerHealthPercent <= RuneTap1PercentLife && PlayerLevel >= 19)
                     {
                         API.CastSpell(RuneTap);
                         return;
                     }
                     //Rune Tap 2nd charge
-                    if (API.CanCast(RuneTap) && API.PlayerHealthPercent <= RuneTap2PercentLife && PlayerLevel >= 19)
+                    if (API.CanCast(RuneTap) && API.PlayerHealthPercent <= RuneTap2PercentLife && PlayerLevel >= 19 && !API.PlayerHasBuff(RuneTap))
                     {
                         API.CastSpell(RuneTap);
                         return;
@@ -294,7 +317,7 @@ namespace HyperElk.Core
                 return;
             }
             //Blood Boil
-            if (API.CanCast(BloodBoil) && API.TargetRange < 5 && API.SpellCharges(BloodBoil) >= 2 && PlayerLevel >= 17)
+            if (API.CanCast(BloodBoil) && API.TargetRange < 5 && ( API.SpellCharges(BloodBoil) >= 2 ||(API.SpellCharges(BloodBoil) >= 1 && API.SpellChargeCD(BloodBoil) <= 200)) && PlayerLevel >= 17)
             {
                 API.CastSpell(BloodBoil);
                 return;
