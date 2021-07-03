@@ -77,6 +77,9 @@ namespace HyperElk.Core
         public override void Initialize()
         {
             CombatRoutine.Name = "Blood DK @Mufflon12";
+
+            if(language != "cn") 
+            { 
             API.WriteLog("Welcome to Blood DK rotation @ Fmflex");
             API.WriteLog("DnD Macro to be use : /cast [@player] Death and Decay");
             API.WriteLog("Anti-Magic Zone Macro to be use : /cast [@player] Anti-Magic Zone");
@@ -98,6 +101,34 @@ namespace HyperElk.Core
             CombatRoutine.AddProp("Trinket2", "Trinket2 usage", CDUsage, "When should trinket1 be used", "Trinket", 0);
             CombatRoutine.AddProp("Hekili", "Hekili is enabled", false, "Should the rotation use Hekili recommendation", "Generic");
 
+                CombatRoutine.AddProp(PhialofSerenity, PhialofSerenity + " Life Percent", percentListProp, " Life percent at which" + PhialofSerenity + " is used, set to 0 to disable", "Defense", 4);
+                CombatRoutine.AddProp(SpiritualHealingPotion, SpiritualHealingPotion + " Life Percent", percentListProp, " Life percent at which" + SpiritualHealingPotion + " is used, set to 0 to disable", "Defense", 4);
+            } else
+            {
+                API.WriteLog("欢迎使用鲜血DK循环 @ Fmflex");
+                API.WriteLog("请创建枯萎凋零宏 : /cast [@player] 枯萎凋零");
+                API.WriteLog("请创建反魔法领域宏 : /cast [@player] 反魔法领域");
+
+                CombatRoutine.AddProp(AntiMagicZone, AntiMagicZone + "%", percentListProp, "使用反魔法领域的生命百分比 " + AntiMagicZone + " 是否使用，设置为0表示禁用", "生命值", 0);
+                CombatRoutine.AddProp(AntiMagicShell, AntiMagicShell + "%", percentListProp, "使用反魔法护罩的生命百分比 " + AntiMagicShell + " 是否使用，设置为0表示禁用", "生命值", 7);
+                CombatRoutine.AddProp(DeathStrike, DeathStrike + "%", percentListProp, "使用灵界打击的生命百分比 " + DeathStrike + " 是否使用，设置为0表示禁用", "生命值", 9);
+                CombatRoutine.AddProp(IceboundFortitude, IceboundFortitude + "%", percentListProp, "使用冰封之韧的生命百分比 " + IceboundFortitude + " 是否使用，设置为0表示禁用", "生命值", 4);
+                CombatRoutine.AddProp(VampiricBlood, VampiricBlood + "%", percentListProp, "使用吸血鬼之血的生命百分比 " + VampiricBlood + " 是否使用，设置为0表示禁用", "生命值", 6);
+                CombatRoutine.AddProp(Blooddrinker, Blooddrinker + "%", percentListProp, "使用饮血者的生命百分比 " + Blooddrinker + " 是否使用，设置为0表示禁用", "生命值", 10);
+                CombatRoutine.AddProp(DeathPact, DeathPact + "%", percentListProp, "使用天灾契约的生命百分比 " + DeathPact + " 是否使用，设置为0表示禁用", "生命值", 3);
+                CombatRoutine.AddProp(Tombstone, Tombstone + "%", percentListProp, "使用墓石的生命百分比 " + Tombstone + " 是否使用，设置为0表示禁用", "生命值", 7);
+
+
+                CombatRoutine.AddProp(RuneTap, "Rune Tap 1st charge %", percentListProp, "使用符文分流的生命百分比 第一层 " + RuneTap + " 使用阈值，设置为0表示禁用", "生命值", 8);
+                CombatRoutine.AddProp(RuneTap2, "Rune Tap 2nd charge %", percentListProp, "使用符文分流的生命百分比 第二层 " + RuneTap2 + " 使用阈值，设置为0表示禁用", "生命值", 5);
+
+                CombatRoutine.AddProp("Trinket1", "使用饰品1", CDUsage, "什么时候使用", "饰品", 0);
+                CombatRoutine.AddProp("Trinket2", "使用饰品2", CDUsage, "什么时候使用", "饰品", 0);
+                CombatRoutine.AddProp("Hekili", "使用hekili插件", false, "是否使用hekili代替本地循环", "通用");
+                CombatRoutine.AddProp(PhialofSerenity, " 使用瓶子", percentListProp, " 生命百分比低于" + PhialofSerenity + " 是否使用，设置为0表示禁用", "防御选项", 4);
+                CombatRoutine.AddProp(SpiritualHealingPotion, SpiritualHealingPotion + " 生命百分比", percentListProp, " 生命百分比 at which" + SpiritualHealingPotion + " 是否使用，设置为0表示禁用", "防御选项", 4);
+
+            }
 
             CombatRoutine.AddSpell("Marrowrend", 195182, "D1");
             CombatRoutine.AddSpell("Blood Boil", 50842, "D2");
@@ -150,8 +181,7 @@ namespace HyperElk.Core
 
             CombatRoutine.AddItem(PhialofSerenity, 177278);
             CombatRoutine.AddItem(SpiritualHealingPotion, 171267);
-            CombatRoutine.AddProp(PhialofSerenity, PhialofSerenity + " Life Percent", percentListProp, " Life percent at which" + PhialofSerenity + " is used, set to 0 to disable", "Defense", 4);
-            CombatRoutine.AddProp(SpiritualHealingPotion, SpiritualHealingPotion + " Life Percent", percentListProp, " Life percent at which" + SpiritualHealingPotion + " is used, set to 0 to disable", "Defense", 4);
+
 
         }
 
