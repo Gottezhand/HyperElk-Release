@@ -77,6 +77,7 @@ namespace HyperElk.Core
         public override void Initialize()
         {
             CombatRoutine.Name = "Blood DK @Mufflon12";
+            CombatRoutine.isAutoBindReady = true;
 
             if(language != "cn") 
             { 
@@ -138,14 +139,14 @@ namespace HyperElk.Core
             CombatRoutine.AddSpell("Vampiric Blood", 55233, "D7");
             CombatRoutine.AddSpell("Icebound Fortitude", 48792, "D8");
             CombatRoutine.AddSpell("Dancing Rune Weapon", 49028, "F10");
-            CombatRoutine.AddSpell("Death and Decay", 43265, "D5");
+            CombatRoutine.AddSpell("Death and Decay", 43265, "D1", "None", "None", @"/cast [@player] #43265#");
             CombatRoutine.AddSpell("Mind Freeze", 47528, "F");
             CombatRoutine.AddSpell("Blooddrinker", 206931, "F3");
             CombatRoutine.AddSpell("Death's Caress", 195292, "F8");
             CombatRoutine.AddSpell("Rune Tap", 194679, "F7");
             CombatRoutine.AddSpell("Raise Dead", 46585, "NumPad5");
             CombatRoutine.AddSpell("Concentrated Flame", "NumPad2");
-            CombatRoutine.AddSpell("Anti-Magic Zone", 51052, "NumPad6");
+            CombatRoutine.AddSpell("Anti-Magic Zone", 51052, "D1", "None", "None", @"/cast [@player] #51052#");
             CombatRoutine.AddSpell("Tombstone", 219809, "NumPad4");
             CombatRoutine.AddSpell("Consumption", 274156, "NumPad9");
             CombatRoutine.AddSpell("Blood Tap", 221699, "F1");
@@ -157,7 +158,7 @@ namespace HyperElk.Core
             CombatRoutine.AddSpell(SwarmingMist, 311648, "NumPad2");
             CombatRoutine.AddSpell(ShackletheUnworthy, 312202, "NumPad2");
             CombatRoutine.AddSpell(AbominationLimb, 315443, "NumPad2");
-            CombatRoutine.AddSpell(DeathsDue, 324128, "NumPad2");
+            CombatRoutine.AddSpell(DeathsDue, 324128, "D1", "None", "None", @"/cast [@player] #324128#");
 
 
             CombatRoutine.AddBuff("Bone Shield", 195181);
@@ -176,8 +177,8 @@ namespace HyperElk.Core
 
             CombatRoutine.AddToggle("Defensive");
 
-            CombatRoutine.AddMacro(trinket1);
-            CombatRoutine.AddMacro(trinket2);
+            CombatRoutine.AddMacro("Trinket1", "F9", "None", "None", @"/use 13");
+            CombatRoutine.AddMacro("Trinket2", "F10", "None", "None", @"/use 14");
 
             CombatRoutine.AddItem(PhialofSerenity, 177278);
             CombatRoutine.AddItem(SpiritualHealingPotion, 171267);
