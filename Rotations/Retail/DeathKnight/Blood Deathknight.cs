@@ -177,8 +177,8 @@ namespace HyperElk.Core
 
             CombatRoutine.AddToggle("Defensive");
 
-            CombatRoutine.AddMacro("Trinket1", "F9", "None", "None", @"/use 13");
-            CombatRoutine.AddMacro("Trinket2", "F10", "None", "None", @"/use 14");
+            CombatRoutine.AddMacro(trinket1, "F9", "None", "None", @"/use 13");
+            CombatRoutine.AddMacro(trinket2, "F10", "None", "None", @"/use 14");
 
             CombatRoutine.AddItem(PhialofSerenity, 177278);
             CombatRoutine.AddItem(SpiritualHealingPotion, 171267);
