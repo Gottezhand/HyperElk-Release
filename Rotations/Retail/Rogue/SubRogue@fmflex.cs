@@ -125,6 +125,7 @@ namespace HyperElk.Core
 		public bool UseHekili => CombatRoutine.GetPropertyBool("Hekili");
         public override void Initialize()
         {
+            CombatRoutine.isAutoBindReady = true;
             CombatRoutine.Name = "Sub Rotation @FmFlex";
             API.WriteLog("Welcome to FmFlex's Sub rotation");
 
@@ -206,8 +207,8 @@ namespace HyperElk.Core
 
             CombatRoutine.AddConduit(LeadbyExample);
 
-            CombatRoutine.AddMacro("trinket1");
-            CombatRoutine.AddMacro("trinket2");
+            CombatRoutine.AddMacro("trinket1", "F9", "None", "None", @"/use 13");
+            CombatRoutine.AddMacro("trinket2", "F10", "None", "None", @"/use 14");
             CombatRoutine.AddItem(PhialofSerenity, 177278);
             CombatRoutine.AddItem(SpiritualHealingPotion, 171267);
             //CB Properties
