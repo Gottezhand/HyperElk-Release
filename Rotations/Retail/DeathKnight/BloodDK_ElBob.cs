@@ -262,6 +262,8 @@ namespace HyperElk.Core
             string LastSpellCastInGame      = API.LastSpellCastInGame;
             bool MouseoverCanInterrupted    = API.MouseoverCanInterrupted;
             bool PlayerIsTargetTarget       = API.PlayerIsUnitTarget("target");
+            int TargetHealthPercent         = API.TargetHealthPercent;
+            bool TargetIsBoss               = API.TargetIsBoss;
 
             /* React to Purgatory
              * Logic: Vampiric Blood to buff healing received
@@ -336,7 +338,7 @@ namespace HyperElk.Core
                     return;
                 }
 
-                if (API.CanCast(AntiMagicShell) && API.TargetHealthPercent < 96) //don't ams the first so you can reset stacks
+                if (API.CanCast(AntiMagicShell) && TargetHealthPercent < 96) //don't ams the first so you can reset stacks
                 {
                     API.CastSpell(AntiMagicShell);
                     return;
@@ -739,7 +741,7 @@ namespace HyperElk.Core
                     }
 
                     /* Heavy Damage Spells */
-                    if (PlayerIsTargetTarget && HasMitigation == false && !StopCDs && API.TargetHealthPercent > 3)
+                    if (PlayerIsTargetTarget && HasMitigation == false && !StopCDs && TargetHealthPercent > 3)
                     {
                         for (int i = 0; i < HeavyDamageCasts.Length; i++)
                         {
@@ -857,8 +859,7 @@ namespace HyperElk.Core
                 }
 
                 /* React to Low HP */
-                bool TargetIsBoss = API.TargetIsBoss;
-                if (((API.TargetHealthPercent >= 5 && TargetIsBoss == false) || TargetIsBoss || PlayerHealthPercent <= 40) && !StopCDs && TargetRange < 30)
+                if (((TargetHealthPercent >= 5 && TargetIsBoss == false) || TargetIsBoss || PlayerHealthPercent <= 40) && !StopCDs && TargetRange < 30)
                 {
                     /* Rune Tap (20% DR, 2 charges, 25s cd)
                     * Logic: constantly use to improve damage/healed received ratio
@@ -903,7 +904,7 @@ namespace HyperElk.Core
                     * or when critically low HP to get a better damage/healed received ratio
                     * Do not use when we are fighting Raznal, has we need IF for important stuff in that fight
                     */
-                    if (API.CanCast(IceboundFortitude) && ((PlayerHealthPercent <= 60 && HasMitigation == false) || PlayerHealthPercent <= 20) && (TargetGUIDNPCID != 176523 || (TargetGUIDNPCID == 176523 && API.TargetHealthPercent <= 33)))
+                    if (API.CanCast(IceboundFortitude) && ((PlayerHealthPercent <= 60 && HasMitigation == false) || PlayerHealthPercent <= 20) && (TargetGUIDNPCID != 176523 || (TargetGUIDNPCID == 176523 && TargetHealthPercent <= 33)))
                     {
                         API.CastSpell(IceboundFortitude);
                         return;
@@ -1080,7 +1081,8 @@ namespace HyperElk.Core
                 * Logic: Slow enemies, deal damage and make Heart Strike AoE
                 */
                 float MeleeRatio = (float)API.PlayerUnitInMeleeRangeCount / (float)TargetUnitInRangeCount * 100;
-                if (DeathAndDecayUsageSetting == "Automatic" && PlayerCurrentRunes >= 1 && TargetRange <= 12 && API.CanCast(DeathAndDecay) && API.PlayerIsMoving == false && TargetGUIDNPCID != 120651 && (MeleeRatio >= 50 || API.PlayerHasBuff(CrimsonScourge)))
+                bool TargetHealthCheck = (TargetHealthPercent > 20 && TargetIsBoss == false) || (TargetHealthPercent > 5 && TargetIsBoss);
+                if (DeathAndDecayUsageSetting == "Automatic" && PlayerCurrentRunes >= 1 && TargetRange <= 12 && API.CanCast(DeathAndDecay) && TargetHealthCheck && API.PlayerIsMoving == false && TargetGUIDNPCID != 120651 && (MeleeRatio >= 50 || API.PlayerHasBuff(CrimsonScourge)))
                 {
                     API.CastSpell(DeathAndDecay);
                     return;
@@ -1105,7 +1107,7 @@ namespace HyperElk.Core
 
                 if (TargetRange > 0 && TargetRange <= 7)
                 {
-                    if (API.PlayerIsTalentSelected(7, 3) && API.TargetHealthPercent >= 10)
+                    if (API.PlayerIsTalentSelected(7, 3) && TargetHealthPercent >= 10)
                     {
                         /* Bonestorm & Death Strike
                         * Logic: Use Death Strike only if Bonestorm isn't available
