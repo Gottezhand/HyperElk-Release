@@ -63,23 +63,14 @@ namespace HyperElk.Core
         private string ShroudOfPurgatory = "Shroud of Purgatory";
         private string Trinket1 = "Trinket1";
         private string Trinket2 = "Trinket2";
-        private string InterruptPriority = "Interrupt Priority";
-        private string RemoveFear = "Remove Fear";
-        private string RemoveStun = "Remove Stun";
-        private string AMSPriority = "AMS Priority";
-        private string MovingFleshcraft = "Moving Fleshcraft";
-        private string DeathAndDecayUsage = "Death and Decay Usage";
-        private string MitigationManagement = "Mitigation Management";
-        string[] TrinketSettings = { "Never", "On Cooldown", "Offensive Cooldowns", "Defensive Cooldowns", "Offensive and Defensive Cooldowns" };
-        string[] InterruptPrioritySettings = { "High", "Normal" };
-        string[] DeathAndDecayUsageSettings = { "Automatic", "Manual" };
-        string[] RemoveFearSettings = { "Never", "With Lichborne", "With Racial", "With Lichborne and Racial" };
-        string[] RemoveStunSettings = { "Never", "With Icebound Fortitude", "With Racial", "With Icebound Fortitude and Racial" };
-        string[] AMSPrioritySettings = { "High", "Low", "Disabled" };
-        string[] MovingFleshcraftSettings = { "Yes", "No" };
-        string[] MitigationManagementSettings = { "Heavy", "Small" };
 
         /* Monsters Buffs, Debuffs & Casts */
+        int[] InterruptList = {     332329, 332671, 331927, 340026, 332666, 332706, 332612, 332084, 321764, 320008, 332608, 328729, 323064, 332605, 
+                                    325523, 325700, 325701, 323552, 323538, 326021, 322486, 322938, 324914, 324776, 326046, 340544, 337235, 337251, 
+                                    337253, 322450, 322527, 321828, 335143, 334748, 320462, 324293, 320170, 338353, 323190, 327130, 322493, 328400, 
+                                    318949, 330403, 336451, 328429, 319070, 328180, 321999, 328094, 328016, 328338, 324609, 335305, 319654, 322433,
+                                    321038, 334653, 335305, 336277, 326952, 326836, 327413, 317936, 317963, 328295, 328137, 328331, 341902, 341969,
+                                    342139, 330562, 330810, 330868, 341771, 330532, 330875, 319669, 324589, 342675, 330586, 358967 };
         int[] HeavyDamageCasts = {  320655, 324394, 338456, 320696, 334488, 338636, 320771, 322557, 340289, 340208, 
                                     340300, 317943, 320966, 323744, 324608, 322736, 320144, 332239, 332181, 336005, 
                                     330713, 329774, 325382, 334929, 341623, 341625, 350828, 350422, 352650, 353969,
@@ -108,25 +99,51 @@ namespace HyperElk.Core
         private string Range = "Range";
 
         /* Settings */
+        private string InterruptPriority = "Interrupt Priority";
+        private string RemoveFear = "Remove Fear";
+        private string RemoveStun = "Remove Stun";
+        private string AMSPriority = "AMS Priority";
+        private string MovingFleshcraft = "Moving Fleshcraft";
+        private string DeathAndDecayUsage = "Death and Decay Usage";
+        private string MitigationManagement = "Mitigation Management";
+        private string DeathStrikeUsage = "Death Strike Saving";
+        private string DeathStrikeThreshold = "Death Strike Threshold";
+        private string VampiricBloodUsage = "Proactive Vampiric Blood";
+        private string InterruptWhitelist = "Use Interrupt Whitelist";
+        string[] TrinketSettings = { "Never", "On Cooldown", "Offensive Cooldowns", "Defensive Cooldowns", "Offensive and Defensive Cooldowns" };
+        string[] InterruptPrioritySettings = { "High", "Normal" };
+        string[] DeathAndDecayUsageSettings = { "Automatic", "Manual" };
+        string[] RemoveFearSettings = { "Never", "With Lichborne", "With Racial", "With Lichborne and Racial" };
+        string[] RemoveStunSettings = { "Never", "With Icebound Fortitude", "With Racial", "With Icebound Fortitude and Racial" };
+        string[] AMSPrioritySettings = { "High", "Low", "Disabled" };
+        string[] MovingFleshcraftSettings = { "Yes", "No" };
+        string[] MitigationManagementSettings = { "Heavy", "Small" };
+        int[] DeathStrikeBankSettings = new int[] { 0, 1, 2, 3 };
+        int[] DeathStrikeThresholdSettings = API.numbPercentListLong;
+        int[] VampiricBloodWhenUnitsAroundSettings = new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
         private string TrinketSetting1 => TrinketSettings[CombatRoutine.GetPropertyInt(Trinket1)];
         private string TrinketSetting2 => TrinketSettings[CombatRoutine.GetPropertyInt(Trinket2)];
         private string DeathAndDecayUsageSetting => DeathAndDecayUsageSettings[CombatRoutine.GetPropertyInt(DeathAndDecayUsage)];
         private string InterruptPrioritySetting => InterruptPrioritySettings[CombatRoutine.GetPropertyInt(InterruptPriority)];
+        private string InterruptListSetting => MovingFleshcraftSettings[CombatRoutine.GetPropertyInt(InterruptWhitelist)];
         private string RemoveFearSetting => RemoveFearSettings[CombatRoutine.GetPropertyInt(RemoveFear)];
         private string RemoveStunSetting => RemoveStunSettings[CombatRoutine.GetPropertyInt(RemoveStun)];
         private string AMSPrioritySetting => AMSPrioritySettings[CombatRoutine.GetPropertyInt(AMSPriority)];
         private string MovingFleshcraftSetting => MovingFleshcraftSettings[CombatRoutine.GetPropertyInt(MovingFleshcraft)];
         private string MitigationManagementSetting => MitigationManagementSettings[CombatRoutine.GetPropertyInt(MitigationManagement)];
+        private int DeathStrikeBankSetting => DeathStrikeBankSettings[CombatRoutine.GetPropertyInt(DeathStrikeUsage)];
+        private int DeathStrikeThresholdSetting => DeathStrikeThresholdSettings[CombatRoutine.GetPropertyInt(DeathStrikeThreshold)];
+        private int VampiricBloodWhenUnitsAroundSetting => VampiricBloodWhenUnitsAroundSettings[CombatRoutine.GetPropertyInt(VampiricBloodUsage)];
 
         public override void Initialize()
         {
             CombatRoutine.Name = "Blood DK @Elbob";
-            API.WriteLog("TOGGLE EXPLANATION");
-            API.WriteLog("AOE: when toggled on, the CR will use blood boil when at least 50% of the monsters around you are in range of blood boil. Kinda ghetto but works most of the time.");
-            API.WriteLog("Battle Res: when toggled on, the CR will keep enough runic power for you to send a battle res at any time. Do not have it toggled on when you take a lot of damage! You need the runic power to heal yourself.");
-            API.WriteLog("Range: when toggled on, the CR will use range spells (death caress and death coil). It's convenient most of the time, but can be very harmful in some situations. Disable when you want to do chirurgical pulls (torments for example). Doing damage to a mob will pull every other mob around. Could mess difficult pulls. You've been warned.");
-            API.WriteLog("Potions: when toggled on, the CR will use health pots (hp < 30%) and healthstones (hp < 40%). Please set Healthstone Life Percent to 0 in the settings. The CR do not use offensive pots at all.");
-            API.WriteLog("PVP: enable pvp spells.");
+            API.WriteLog("TOGGLE EXPLANATION + MACRO" +
+                "\nAOE: when toggled on, the CR will use blood boil when at least 50% of the monsters around you are in range of blood boil. Kinda ghetto but works most of the time." +
+                "\nBattle Res: when toggled on, the CR will keep enough runic power for you to send a battle res at any time. Do not have it toggled on when you take a lot of damage! You need the runic power to heal yourself." +
+                "\nRange: when toggled on, the CR will use range spells (death caress and death coil). It's convenient most of the time, but can be very harmful in some situations. Disable when you want to do chirurgical pulls (torments for example) or when you need to keep your runes." +
+                "\nPotions: when toggled on, the CR will use health pots (hp < 20%) and healthstones (hp < 30%). Please set Healthstone Life Percent to 0 in the settings. The CR do not use offensive pots at all." +
+                "\nDeath and Decay macro:\n#showtooltip Death and Decay\n/cast[@player] Death and Decay");
             CombatRoutine.isAutoBindReady = true;
             CombatRoutine.AddSpell(Marrowrend, 195182, "None");
             CombatRoutine.AddSpell(BloodBoil, 50842, "None");
@@ -225,16 +242,20 @@ namespace HyperElk.Core
             CombatRoutine.AddToggle(Range);
             CombatRoutine.AddToggle(Potions);
             CombatRoutine.AddToggle(PVP);
-            CombatRoutine.AddProp(Trinket1, "Use " + "Trinket 1", TrinketSettings, "Use " + "Trinket 1" + " with Cooldowns", "Trinkets", 0);
-            CombatRoutine.AddProp(Trinket2, "Use " + "Trinket 2", TrinketSettings, "Use " + "Trinket 2" + " with Cooldowns", "Trinkets", 0);
+            CombatRoutine.AddProp(Trinket1, Trinket1, TrinketSettings, "Use Trinket 1 with Cooldowns", "Trinkets", 0);
+            CombatRoutine.AddProp(Trinket2, Trinket2, TrinketSettings, "Use Trinket 2 with Cooldowns", "Trinkets", 0);
             CombatRoutine.AddProp(DeathAndDecayUsage, DeathAndDecayUsage, DeathAndDecayUsageSettings, "Set to manual if you absolutely need DnD to kite. You will have to cast it yourself", "Rotation", 0);
             CombatRoutine.AddProp(InterruptPriority, InterruptPriority, InterruptPrioritySettings, "High: auto-interrupt will cancel your casts and channelings if it has to", Interrupt, 0);
+            CombatRoutine.AddProp(InterruptWhitelist, InterruptWhitelist, MovingFleshcraftSettings, "Only kick spells that are in the whitelist made by Mort", Interrupt, 0);
             CombatRoutine.AddProp(RemoveFear, RemoveFear, RemoveFearSettings, "Automatically remove fear effects", "AutoRemoval", 0);
             CombatRoutine.AddProp(RemoveStun, RemoveStun, RemoveStunSettings, "Automatically remove stun effects", "AutoRemoval", 0);
             CombatRoutine.AddProp(AMSPriority, AMSPriority, AMSPrioritySettings, "AMS priority regarding heavy casts and low HP. Heavy casts are not sorted by physical/magical types yet, so AMS might be wasted by the rotation there. " +
                 "Priority regarding low HP: high = HP <= 50, low = HP <= 20. AMS will still be casted for AMS debuff and AMS cast list, even if you set Disabled here.", "Rotation", 0);
             CombatRoutine.AddProp(MovingFleshcraft, MovingFleshcraft, MovingFleshcraftSettings, "Can you channel Fleshcraft while moving?", "Rotation", 0);
             CombatRoutine.AddProp(MitigationManagement, MitigationManagement, MitigationManagementSettings, "Heavy will cast more CDs at once. Use on insanely huge damage fights, Small is better is all other scenarios", "Rotation", 0);
+            CombatRoutine.AddProp(DeathStrikeUsage, DeathStrikeUsage, DeathStrikeBankSettings, "The amount of Death Strikes reserved for selfheal. 0: max dps, min heal. 1: good dps, average heal. 2: average dps, good heal. 3: low dps, best survavibility. The easier the content is for you, the least Death Strike you need to save", "Rotation", 0);
+            CombatRoutine.AddProp(DeathStrikeThreshold, DeathStrikeThreshold, DeathStrikeThresholdSettings, "Player health percentage to trigger a death strike. Lower the value is, better the death strikes, but more dangerous it is. This value is extremely important for survavibility. Try to lower it to something around 40 if the content is hard for you", "Rotation", 0);
+            CombatRoutine.AddProp(VampiricBloodUsage, VampiricBloodUsage, VampiricBloodWhenUnitsAroundSettings, "Use Vampiric Blood when enemy around >= than this setting. Good when you play Blood Thirst and M+. 0 to disable and let Vampiric Blood being used by player HP or target cast.", "Rotation", 0);
         }
 
         public override void Pulse()
@@ -259,9 +280,10 @@ namespace HyperElk.Core
             bool StopCDs                    = API.PlayerHasBuff(ForgeborneReveries) || (API.PlayerHasDebuff(SoulExhaustion, false) && PlayerHealthPercent < 1) || API.PlayerHasDebuff(ShroudOfPurgatory);
             int DeathStrikeCost             = API.PlayerHasBuff(Ossuary) ? 40 : 45;
             int TargetGUIDNPCID             = API.TargetGUIDNPCID;
-            string LastSpellCastInGame      = API.LastSpellCastInGame;
             bool MouseoverCanInterrupted    = API.MouseoverCanInterrupted;
             bool PlayerIsTargetTarget       = API.PlayerIsUnitTarget("target");
+            int TargetHealthPercent         = API.TargetHealthPercent;
+            bool TargetIsBoss               = API.TargetIsBoss;
 
             /* React to Purgatory
              * Logic: Vampiric Blood to buff healing received
@@ -336,7 +358,7 @@ namespace HyperElk.Core
                     return;
                 }
 
-                if (API.CanCast(AntiMagicShell) && API.TargetHealthPercent < 96) //don't ams the first so you can reset stacks
+                if (API.CanCast(AntiMagicShell) && TargetHealthPercent < 96) //don't ams the first so you can reset stacks
                 {
                     API.CastSpell(AntiMagicShell);
                     return;
@@ -456,7 +478,24 @@ namespace HyperElk.Core
             }
 
             /* High Priority Interrupt */
-            if (isInterrupt && API.ToggleIsEnabled(Interrupt) && InterruptPrioritySetting == "High")
+            bool ShouldInterrupt = false;
+            if (isInterrupt && API.ToggleIsEnabled(Interrupt))
+            {
+                if (InterruptListSetting == "No")
+                    ShouldInterrupt = true;
+                else
+                {
+                    for (int i = 0; i < InterruptList.Length; i++)
+                    {
+                        if (CurrentCastSpellID == InterruptList[i])
+                        {
+                            ShouldInterrupt = true;
+                        }
+                    }
+                }
+            }
+
+            if (ShouldInterrupt && InterruptPrioritySetting == "High")
             {
                 if (API.CanCast(MindFreeze))
                 {
@@ -619,7 +658,7 @@ namespace HyperElk.Core
                 }
 
                 /* Interrupt */
-                if (isInterrupt && API.ToggleIsEnabled(Interrupt))
+                if (ShouldInterrupt)
                 {
                     if (MouseoverCanInterrupted && !API.MacroIsIgnored(MindFreeze + " MO") && API.CanCast(MindFreeze) && MouseoverRange <= 15)
                     {
@@ -647,6 +686,14 @@ namespace HyperElk.Core
                             return;
                         }
                     }
+                }
+
+                /* Vampiric Blood based on units around */
+                if (API.CanCast(VampiricBlood) && (TargetHealthPercent > 30 || (TargetHealthPercent > 10 && TargetIsBoss)) && VampiricBloodWhenUnitsAroundSetting > 0 && API.PlayerUnitInMeleeRangeCount >=  VampiricBloodWhenUnitsAroundSetting)
+                {
+                    //API.WriteLog(API.PlayerUnitInMeleeRangeCount.ToString());
+                    API.CastSpell(VampiricBlood);
+                    return;
                 }
 
                 /* React to debuffs and magic casts */
@@ -739,12 +786,18 @@ namespace HyperElk.Core
                     }
 
                     /* Heavy Damage Spells */
-                    if (PlayerIsTargetTarget && HasMitigation == false && !StopCDs && API.TargetHealthPercent > 3)
+                    if (PlayerIsTargetTarget && HasMitigation == false && !StopCDs && TargetHealthPercent > 3)
                     {
                         for (int i = 0; i < HeavyDamageCasts.Length; i++)
                         {
                             if (CurrentCastSpellID == HeavyDamageCasts[i])
                             {
+                                if (PlayerHealthPercent <= 60 && API.CanCast(DeathStrike) && TargetRange < 7 && PlayerRunicPower >= DeathStrikeCost)
+                                {
+                                    API.CastSpell(DeathStrike);
+                                    return;
+                                }
+
                                 if (API.CanCast(RuneTap) && API.SpellCharges(RuneTap) > 0)
                                 {
                                     API.CastSpell(RuneTap);
@@ -832,7 +885,7 @@ namespace HyperElk.Core
                     }
                 }
 
-                if (PlayerHealthPercent <= 85 && API.CanCast(DeathStrike) && TargetRange < 7 && ((PlayerRunicPower >= DeathStrikeCost && API.ToggleIsEnabled(BattleRes) == false) || PlayerRunicPower >= DeathStrikeCost + 30))
+                if (PlayerHealthPercent <= DeathStrikeThresholdSetting && API.CanCast(DeathStrike) && TargetRange < 7 && ((PlayerRunicPower >= DeathStrikeCost && API.ToggleIsEnabled(BattleRes) == false) || PlayerRunicPower >= DeathStrikeCost + 30))
                 {
                     API.CastSpell(DeathStrike);
                     return;
@@ -840,25 +893,22 @@ namespace HyperElk.Core
 
                 if (API.ToggleIsEnabled(Potions) && !StopCDs)
                 {
-                    bool LastSpellCastIsHeal = LastSpellCastInGame == DeathStrike || LastSpellCastInGame == "Healthstone" || LastSpellCastInGame == SpiritualHealingPotion;
-                    bool ShouldCastHeal = (!LastSpellCastIsHeal && PlayerHealthPercent <= 30) || (LastSpellCastIsHeal && PlayerHealthPercent <= 20);
-
+                    //bool LastSpellCastIsHeal = LastSpellCastInGame == DeathStrike || LastSpellCastInGame == "Healthstone" || LastSpellCastInGame == SpiritualHealingPotion;
                     /* Healthstone */
-                    if (API.PlayerItemCanUse("Healthstone") && API.PlayerItemRemainingCD("Healthstone") == 0 && ShouldCastHeal)
+                    if (API.PlayerItemCanUse("Healthstone") && API.PlayerItemRemainingCD("Healthstone") == 0 && PlayerHealthPercent <= 30)
                     {
                         API.CastSpell("Healthstone");
                     }
 
                     /* Health Potion */
-                    if (API.PlayerItemCanUse(SpiritualHealingPotion) && API.PlayerItemRemainingCD(SpiritualHealingPotion) == 0 && ShouldCastHeal)
+                    if (API.PlayerItemCanUse(SpiritualHealingPotion) && API.PlayerItemRemainingCD(SpiritualHealingPotion) == 0 && PlayerHealthPercent <= 20)
                     {
                         API.CastSpell(SpiritualHealingPotion);
                     }
                 }
 
                 /* React to Low HP */
-                bool TargetIsBoss = API.TargetIsBoss;
-                if (((API.TargetHealthPercent >= 5 && TargetIsBoss == false) || TargetIsBoss || PlayerHealthPercent <= 40) && !StopCDs && TargetRange < 30)
+                if (((TargetHealthPercent >= 5 && TargetIsBoss == false) || TargetIsBoss || PlayerHealthPercent <= 40) && !StopCDs && TargetRange < 30)
                 {
                     /* Rune Tap (20% DR, 2 charges, 25s cd)
                     * Logic: constantly use to improve damage/healed received ratio
@@ -903,7 +953,7 @@ namespace HyperElk.Core
                     * or when critically low HP to get a better damage/healed received ratio
                     * Do not use when we are fighting Raznal, has we need IF for important stuff in that fight
                     */
-                    if (API.CanCast(IceboundFortitude) && ((PlayerHealthPercent <= 60 && HasMitigation == false) || PlayerHealthPercent <= 20) && (TargetGUIDNPCID != 176523 || (TargetGUIDNPCID == 176523 && API.TargetHealthPercent <= 33)))
+                    if (API.CanCast(IceboundFortitude) && ((PlayerHealthPercent <= 60 && HasMitigation == false) || PlayerHealthPercent <= 20) && (TargetGUIDNPCID != 176523 || (TargetGUIDNPCID == 176523 && TargetHealthPercent <= 33)))
                     {
                         API.CastSpell(IceboundFortitude);
                         return;
@@ -1080,7 +1130,8 @@ namespace HyperElk.Core
                 * Logic: Slow enemies, deal damage and make Heart Strike AoE
                 */
                 float MeleeRatio = (float)API.PlayerUnitInMeleeRangeCount / (float)TargetUnitInRangeCount * 100;
-                if (DeathAndDecayUsageSetting == "Automatic" && PlayerCurrentRunes >= 1 && TargetRange <= 12 && API.CanCast(DeathAndDecay) && API.PlayerIsMoving == false && TargetGUIDNPCID != 120651 && (MeleeRatio >= 50 || API.PlayerHasBuff(CrimsonScourge)))
+                bool TargetHealthCheck = (TargetHealthPercent > 20 && TargetIsBoss == false) || (TargetHealthPercent > 5 && TargetIsBoss);
+                if (DeathAndDecayUsageSetting == "Automatic" && PlayerCurrentRunes >= 1 && TargetRange <= 12 && API.CanCast(DeathAndDecay) && TargetHealthCheck && API.PlayerIsMoving == false && TargetGUIDNPCID != 120651 && (MeleeRatio >= 50 || API.PlayerHasBuff(CrimsonScourge)))
                 {
                     API.CastSpell(DeathAndDecay);
                     return;
@@ -1090,7 +1141,7 @@ namespace HyperElk.Core
                 * Logic: IsAOE == false is meant to be used when there are untankable mobs around
                 * Melee range monster ratio wouldnt work, so need to disable AoE toggle to skip it
                 */
-                if (API.CanCast(BloodBoil) && TargetRange <= 8 && TargetGUIDNPCID != 120651 && ((MeleeRatio >= 50 && API.SpellCharges(BloodBoil) >= 2) || (MeleeRatio >= 100 && API.SpellCharges(BloodBoil) >= 1) || IsAOE == false)) //(API.TargetHasDebuff(BloodPlague) == false && API.SpellCharges(BloodBoil) >= 1) || API.SpellCharges(BloodBoil) >= 2
+                if (API.CanCast(BloodBoil) && TargetRange <= 8 && TargetGUIDNPCID != 120651 && ((MeleeRatio >= 50 && API.SpellCharges(BloodBoil) >= 2) || (MeleeRatio >= 100 && API.SpellCharges(BloodBoil) >= 1) || IsAOE == false))
                 {
                     API.CastSpell(BloodBoil);
                     return;
@@ -1103,9 +1154,11 @@ namespace HyperElk.Core
                     return;
                 }
 
+                int SaveForBattleRes = API.ToggleIsEnabled(BattleRes) ? 30 : 0;
                 if (TargetRange > 0 && TargetRange <= 7)
                 {
-                    if (API.PlayerIsTalentSelected(7, 3) && API.TargetHealthPercent >= 10)
+                    bool CanUseDeathStrike = PlayerRunicPower >= (DeathStrikeCost * (DeathStrikeBankSetting + 1)) + SaveForBattleRes;
+                    if (API.PlayerIsTalentSelected(7, 3) && TargetHealthPercent >= 10)
                     {
                         /* Bonestorm & Death Strike
                         * Logic: Use Death Strike only if Bonestorm isn't available
@@ -1119,7 +1172,7 @@ namespace HyperElk.Core
                             return;
                         }
 
-                        if (API.CanCast(DeathStrike) && ((PlayerRunicPower >= DeathStrikeCost && API.ToggleIsEnabled(BattleRes) == false) || PlayerRunicPower >= DeathStrikeCost + 30) && API.SpellISOnCooldown(Bonestorm))
+                        if (API.CanCast(DeathStrike) && CanUseDeathStrike && API.SpellISOnCooldown(Bonestorm))
                         {
                             API.CastSpell(DeathStrike);
                             return;
@@ -1127,7 +1180,7 @@ namespace HyperElk.Core
                     }
                     else
                     {
-                        if (API.CanCast(DeathStrike) && PlayerRunicPower >= DeathStrikeCost * 2) // <- DPS Death Strike, keep enough Runic Power to cast a Death Strike if we need healing
+                        if (API.CanCast(DeathStrike) && CanUseDeathStrike)
                         {
                             API.CastSpell(DeathStrike);
                             return;
@@ -1154,7 +1207,8 @@ namespace HyperElk.Core
 
                 if (API.ToggleIsEnabled(Range) && TargetRange > 7 && TargetRange <= 30)
                 {
-                    if (PlayerRunicPower >= 85 && API.CanCast(DeathCoil) && (API.ToggleIsEnabled(BattleRes) == false || (API.ToggleIsEnabled(BattleRes) && PlayerRunicPower >= 100)))
+                    bool CanUseDeathCoil = PlayerRunicPower >= (DeathStrikeCost * (DeathStrikeBankSetting + 2)) + SaveForBattleRes; //same than ds but with more margin because dc sucks ass
+                    if (API.CanCast(DeathCoil) && CanUseDeathCoil)
                     {
                         API.CastSpell(DeathCoil);
                         return;
