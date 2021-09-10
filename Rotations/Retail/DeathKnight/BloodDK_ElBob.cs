@@ -70,7 +70,8 @@ namespace HyperElk.Core
                                     337253, 322450, 322527, 321828, 335143, 334748, 320462, 324293, 320170, 338353, 323190, 327130, 322493, 328400, 
                                     318949, 330403, 336451, 328429, 319070, 328180, 321999, 328094, 328016, 328338, 324609, 335305, 319654, 322433,
                                     321038, 334653, 335305, 336277, 326952, 326836, 327413, 317936, 317963, 328295, 328137, 328331, 341902, 341969,
-                                    342139, 330562, 330810, 330868, 341771, 330532, 330875, 319669, 324589, 342675, 330586, 358967 };
+                                    342139, 330562, 330810, 330868, 341771, 330532, 330875, 319669, 324589, 342675, 330586, 358967, 337220, 337235,
+                                    337253, 337255, 337251, 337249 };
         int[] HeavyDamageCasts = {  320655, 324394, 338456, 320696, 334488, 338636, 320771, 322557, 340289, 340208, 
                                     340300, 317943, 320966, 323744, 324608, 322736, 320144, 332239, 332181, 336005, 
                                     330713, 329774, 325382, 334929, 341623, 341625, 350828, 350422, 352650, 353969,
@@ -109,14 +110,14 @@ namespace HyperElk.Core
         private string DeathStrikeUsage = "Death Strike Saving";
         private string DeathStrikeThreshold = "Death Strike Threshold";
         private string VampiricBloodUsage = "Proactive Vampiric Blood";
-        private string InterruptWhitelist = "Use Interrupt Whitelist";
+        private string InterruptWhitelist = "Interrupt Whitelist (incomplete)";
         string[] TrinketSettings = { "Never", "On Cooldown", "Offensive Cooldowns", "Defensive Cooldowns", "Offensive and Defensive Cooldowns" };
         string[] InterruptPrioritySettings = { "High", "Normal" };
         string[] DeathAndDecayUsageSettings = { "Automatic", "Manual" };
         string[] RemoveFearSettings = { "Never", "With Lichborne", "With Racial", "With Lichborne and Racial" };
         string[] RemoveStunSettings = { "Never", "With Icebound Fortitude", "With Racial", "With Icebound Fortitude and Racial" };
         string[] AMSPrioritySettings = { "High", "Low", "Disabled" };
-        string[] MovingFleshcraftSettings = { "Yes", "No" };
+        string[] MovingFleshcraftSettings = { "No", "Yes" };
         string[] MitigationManagementSettings = { "Heavy", "Small" };
         int[] DeathStrikeBankSettings = new int[] { 0, 1, 2, 3 };
         int[] DeathStrikeThresholdSettings = API.numbPercentListLong;
@@ -143,7 +144,7 @@ namespace HyperElk.Core
                 "\nBattle Res: when toggled on, the CR will keep enough runic power for you to send a battle res at any time. Do not have it toggled on when you take a lot of damage! You need the runic power to heal yourself." +
                 "\nRange: when toggled on, the CR will use range spells (death caress and death coil). It's convenient most of the time, but can be very harmful in some situations. Disable when you want to do chirurgical pulls (torments for example) or when you need to keep your runes." +
                 "\nPotions: when toggled on, the CR will use health pots (hp < 20%) and healthstones (hp < 30%). Please set Healthstone Life Percent to 0 in the settings. The CR do not use offensive pots at all." +
-                "\nDeath and Decay macro:\n#showtooltip Death and Decay\n/cast[@player] Death and Decay");
+                "\nDeath and Decay macro:\n#showtooltip Death and Decay\n/cast [@player] Death and Decay");
             CombatRoutine.isAutoBindReady = true;
             CombatRoutine.AddSpell(Marrowrend, 195182, "None");
             CombatRoutine.AddSpell(BloodBoil, 50842, "None");
@@ -232,6 +233,7 @@ namespace HyperElk.Core
             CombatRoutine.AddDebuff(DualbladeScythe);
             CombatRoutine.AddItem(SpiritualHealingPotion, 171267);
             CombatRoutine.AddConduit(HardenedBones);
+            CombatRoutine.AddMacro(DeathAndDecay + " Macro", "None", "None", "None", @"/Cast [@player] #43265#");
             CombatRoutine.AddMacro(Trinket1, "None");
             CombatRoutine.AddMacro(Trinket2, "None");
             CombatRoutine.AddMacro(MindFreeze + " MO", "None");
@@ -792,8 +794,9 @@ namespace HyperElk.Core
                         {
                             if (CurrentCastSpellID == HeavyDamageCasts[i])
                             {
-                                if (PlayerHealthPercent <= 60 && API.CanCast(DeathStrike) && TargetRange < 7 && PlayerRunicPower >= DeathStrikeCost)
+                                if (PlayerHealthPercent <= 75 && API.CanCast(DeathStrike) && TargetRange < 7 && PlayerRunicPower >= DeathStrikeCost)
                                 {
+                                    API.WriteLog("Death Strike before Heavy Damage Cast!");
                                     API.CastSpell(DeathStrike);
                                     return;
                                 }
@@ -1133,7 +1136,7 @@ namespace HyperElk.Core
                 bool TargetHealthCheck = (TargetHealthPercent > 20 && TargetIsBoss == false) || (TargetHealthPercent > 5 && TargetIsBoss);
                 if (DeathAndDecayUsageSetting == "Automatic" && PlayerCurrentRunes >= 1 && TargetRange <= 12 && API.CanCast(DeathAndDecay) && TargetHealthCheck && API.PlayerIsMoving == false && TargetGUIDNPCID != 120651 && (MeleeRatio >= 50 || API.PlayerHasBuff(CrimsonScourge)))
                 {
-                    API.CastSpell(DeathAndDecay);
+                    API.CastSpell(DeathAndDecay + " Macro");
                     return;
                 }
 
@@ -1214,7 +1217,7 @@ namespace HyperElk.Core
                         return;
                     }
 
-                    if (PlayerCurrentRunes >= 3 && API.CanCast(DeathsCaress))
+                    if (PlayerCurrentRunes >= 4 && API.CanCast(DeathsCaress))
                     {
                         API.CastSpell(DeathsCaress);
                         return;
